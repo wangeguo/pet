@@ -1,0 +1,28 @@
+[package]
+name = "theater"
+version.workspace = true
+edition.workspace = true
+description = "Theater process (Bevy) for Pet desktop companion"
+
+[[bin]]
+name = "pet-theater"
+path = "src/main.rs"
+
+[dependencies]
+common.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true
+
+[dependencies.bevy]
+workspace = true
+features = [
+    "bevy_animation",
+    "bevy_asset",
+    "bevy_gltf",
+    "bevy_pbr",
+    "bevy_render",
+    "bevy_state",
+    "bevy_winit",
+    "wayland",
+    "x11",
+]
