@@ -1,0 +1,69 @@
+name: Continuous Integration
+
+on:
+  pull_request:
+    paths-ignore:
+      - README.md
+      - docs/**
+  push:
+    paths-ignore:
+      - README.md
+      - docs/**
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  fmt:
+    name: Rustfmt
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@nightly
+        with:
+          components: rustfmt
+      - uses: taiki-e/install-action@just
+      - uses: Swatinem/rust-cache@v2
+      - name: Check formatting
+        run: just check-fmt
+
+  clippy:
+    name: Clippy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@nightly
+        with:
+          components: clippy
+      - uses: taiki-e/install-action@just
+      - uses: Swatinem/rust-cache@v2
+      - name: Linting
+        run: just clippy
+
+  build:
+    name: Build
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@nightly
+      - uses: taiki-e/install-action@just
+      - uses: Swatinem/rust-cache@v2
+      - name: Build the project
+        run: just build
+
+  test:
+    name: Test
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@nightly
+      - uses: taiki-e/install-action@just
+      - uses: Swatinem/rust-cache@v2
+      - name: Test the project
+        run: just test
