@@ -33,9 +33,8 @@ async fn main() -> Result<()> {
         return Err(e);
     }
 
-    if config.get_active_pet().is_some()
-        && let Err(e) = manager.start_theater()
-    {
+    // Always start theater - it will show the test model if no pet is configured
+    if let Err(e) = manager.start_theater() {
         error!("Failed to start theater process: {e}");
     }
 

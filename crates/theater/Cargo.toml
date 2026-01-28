@@ -23,6 +23,10 @@ features = [
     "bevy_render",
     "bevy_state",
     "bevy_winit",
+    "png",
+    "reflect_auto_register",
+    "tonemapping_luts",
     "wayland",
     "x11",
+    "zstd_rust",
 ]

@@ -38,7 +38,7 @@ all:
     just build
 
 # Run the main program
-run *args:
+run *args: build
     cargo run --bin pet -- {{ args }}
 
 # Run the tray process
