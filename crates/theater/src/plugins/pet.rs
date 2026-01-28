@@ -45,24 +45,31 @@ fn setup_scene(
         MainCamera,
     ));
 
-    // Point light
-    commands.spawn((
-        PointLight {
-            intensity: 2_000_000.0,
-            shadows_enabled: false,
-            ..default()
-        },
-        Transform::from_xyz(4.0, 8.0, 4.0),
-    ));
+    // Ambient light base
+    commands.spawn(AmbientLight {
+        color: Color::WHITE,
+        brightness: 500.0,
+        ..default()
+    });
 
-    // Directional light
+    // Main light from front-top
     commands.spawn((
         DirectionalLight {
             illuminance: 10_000.0,
             shadows_enabled: false,
             ..default()
         },
-        Transform::from_xyz(0.0, 10.0, 0.0).looking_at(Vec3::ZERO, Vec3::Z),
+        Transform::from_xyz(0.0, 5.0, -5.0).looking_at(Vec3::ZERO, Vec3::Y),
+    ));
+
+    // Fill light from below to reduce bottom shadows
+    commands.spawn((
+        DirectionalLight {
+            illuminance: 5_000.0,
+            shadows_enabled: false,
+            ..default()
+        },
+        Transform::from_xyz(0.0, -3.0, -3.0).looking_at(Vec3::ZERO, Vec3::Y),
     ));
 
     // Placeholder cube while model loads

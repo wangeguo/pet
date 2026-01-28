@@ -4,7 +4,9 @@ use crate::plugins::{InteractionPlugin, PetPlugin, ReplayPlugin};
 use crate::resources::TheaterConfig;
 use bevy::asset::AssetPlugin;
 use bevy::prelude::*;
+use bevy::render::settings::WgpuSettings;
 use bevy::window::{PresentMode, WindowLevel, WindowResolution};
+use bevy::winit::{UpdateMode, WinitSettings};
 use common::{AppConfig, AppPaths};
 use std::path::PathBuf;
 
@@ -53,7 +55,7 @@ pub fn run_theater() -> common::Result<()> {
                 })
                 .set(bevy::render::RenderPlugin {
                     render_creation: bevy::render::settings::RenderCreation::Automatic(
-                        bevy::render::settings::WgpuSettings {
+                        WgpuSettings {
                             backends: Some(bevy::render::settings::Backends::all()),
                             ..default()
                         },
@@ -62,6 +64,11 @@ pub fn run_theater() -> common::Result<()> {
                 }),
         )
         .insert_resource(ClearColor(Color::NONE))
+        // Limit frame rate to reduce CPU usage - desktop pet doesn't need 60fps
+        .insert_resource(WinitSettings {
+            focused_mode: UpdateMode::reactive_low_power(std::time::Duration::from_millis(100)),
+            unfocused_mode: UpdateMode::reactive_low_power(std::time::Duration::from_millis(100)),
+        })
         .insert_resource(theater_config)
         .add_plugins(PetPlugin)
         .add_plugins(InteractionPlugin)

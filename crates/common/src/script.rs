@@ -88,7 +88,7 @@ impl BehaviorScript {
     pub fn idle() -> Self {
         Self {
             id: "idle".to_string(),
-            duration: None,
+            duration: Some(3.0),
             keyframes: vec![
                 Keyframe {
                     time: 0.0,
