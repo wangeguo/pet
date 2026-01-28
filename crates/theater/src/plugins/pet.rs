@@ -15,7 +15,9 @@ impl Plugin for PetPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<PetModelState>()
             .add_systems(Startup, setup_scene)
-            .add_systems(Update, (spawn_gltf_scene, remove_gltf_cameras));
+            .add_systems(Update, spawn_gltf_scene)
+            // Run camera removal in PostUpdate to catch newly spawned cameras from scenes
+            .add_systems(PostUpdate, remove_gltf_cameras);
     }
 }
 
@@ -64,6 +66,7 @@ fn setup_scene(
     ));
 
     // Placeholder cube while model loads
+    // Note: PlaceholderPet does NOT have PetMarker to avoid ReplayState initialization
     commands.spawn((
         Mesh3d(meshes.add(Cuboid::new(0.5, 0.5, 0.5))),
         MeshMaterial3d(materials.add(StandardMaterial {
@@ -71,7 +74,6 @@ fn setup_scene(
             ..default()
         })),
         Transform::from_xyz(0.0, 0.25, 0.0),
-        PetMarker,
         PlaceholderPet,
     ));
 
@@ -112,6 +114,7 @@ fn spawn_gltf_scene(
     // Remove placeholder
     for entity in placeholder_query.iter() {
         commands.entity(entity).despawn();
+        tracing::info!("Despawned placeholder entity {:?}", entity);
     }
 
     // Spawn the scene
@@ -120,12 +123,15 @@ fn spawn_gltf_scene(
         .clone()
         .or_else(|| gltf.scenes.first().cloned())
     {
-        commands.spawn((
-            SceneRoot(scene_handle),
-            Transform::from_scale(Vec3::splat(1.0)),
-            PetMarker,
-        ));
+        let pet_entity = commands
+            .spawn((
+                SceneRoot(scene_handle),
+                Transform::from_scale(Vec3::splat(1.0)),
+                PetMarker,
+            ))
+            .id();
         pet_state.spawned = true;
+        tracing::info!("Spawned GLTF scene as pet entity {:?}", pet_entity);
     }
 }
 
@@ -136,6 +142,7 @@ fn remove_gltf_cameras(
 ) {
     for entity in camera_query.iter() {
         commands.entity(entity).despawn();
+        tracing::info!("Removed GLTF camera entity {:?}", entity);
     }
 }
 

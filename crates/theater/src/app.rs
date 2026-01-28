@@ -1,6 +1,6 @@
 //! Bevy application configuration and setup
 
-use crate::plugins::{InteractionPlugin, PetPlugin};
+use crate::plugins::{InteractionPlugin, PetPlugin, ReplayPlugin};
 use crate::resources::TheaterConfig;
 use bevy::asset::AssetPlugin;
 use bevy::prelude::*;
@@ -65,6 +65,7 @@ pub fn run_theater() -> common::Result<()> {
         .insert_resource(theater_config)
         .add_plugins(PetPlugin)
         .add_plugins(InteractionPlugin)
+        .add_plugins(ReplayPlugin)
         .run();
 
     Ok(())

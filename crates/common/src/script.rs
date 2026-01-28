@@ -1,4 +1,6 @@
 use serde::{Deserialize, Serialize};
+use std::fs;
+use std::path::Path;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct BehaviorScript {
@@ -7,6 +9,61 @@ pub struct BehaviorScript {
     pub keyframes: Vec<Keyframe>,
     pub next: Option<String>,
     pub interruptible: bool,
+}
+
+impl BehaviorScript {
+    /// Load a behavior script from a RON file
+    pub fn load_from_ron<P: AsRef<Path>>(path: P) -> Result<Self, ScriptError> {
+        let content = fs::read_to_string(&path).map_err(|e| ScriptError::Io {
+            path: path.as_ref().display().to_string(),
+            source: e,
+        })?;
+        Self::parse_ron(&content)
+    }
+
+    /// Parse a behavior script from a RON string
+    pub fn parse_ron(content: &str) -> Result<Self, ScriptError> {
+        ron::from_str(content).map_err(ScriptError::Parse)
+    }
+
+    /// Serialize the script to RON format
+    pub fn to_ron(&self) -> Result<String, ScriptError> {
+        ron::ser::to_string_pretty(self, ron::ser::PrettyConfig::default())
+            .map_err(ScriptError::Serialize)
+    }
+}
+
+/// Errors that can occur when loading or saving scripts
+#[derive(Debug)]
+pub enum ScriptError {
+    Io {
+        path: String,
+        source: std::io::Error,
+    },
+    Parse(ron::error::SpannedError),
+    Serialize(ron::Error),
+}
+
+impl std::fmt::Display for ScriptError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Io { path, source } => {
+                write!(f, "failed to read script file '{}': {}", path, source)
+            }
+            Self::Parse(e) => write!(f, "failed to parse RON script: {}", e),
+            Self::Serialize(e) => write!(f, "failed to serialize script to RON: {}", e),
+        }
+    }
+}
+
+impl std::error::Error for ScriptError {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        match self {
+            Self::Io { source, .. } => Some(source),
+            Self::Parse(e) => Some(e),
+            Self::Serialize(e) => Some(e),
+        }
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -36,8 +93,12 @@ impl BehaviorScript {
                 Keyframe {
                     time: 0.0,
                     action: Action::PlayAnimation {
-                        name: "breathe".to_string(),
+                        name: "idle".to_string(),
                     },
+                },
+                Keyframe {
+                    time: 0.0,
+                    action: Action::MoveTo { x: 0.0, y: 0.0 },
                 },
                 Keyframe {
                     time: 3.0,
@@ -65,11 +126,11 @@ impl BehaviorScript {
                 },
                 Keyframe {
                     time: 0.0,
-                    action: Action::MoveTo { x: 100.0, y: 0.0 },
+                    action: Action::MoveTo { x: 0.3, y: 0.0 },
                 },
                 Keyframe {
                     time: 2.0,
-                    action: Action::MoveTo { x: -100.0, y: 0.0 },
+                    action: Action::MoveTo { x: -0.3, y: 0.0 },
                 },
             ],
             next: Some("idle".to_string()),

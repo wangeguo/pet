@@ -10,6 +10,7 @@ path = "src/main.rs"
 
 [dependencies]
 common.workspace = true
+rand.workspace = true
 tracing.workspace = true
 tracing-subscriber.workspace = true
 
@@ -23,6 +24,7 @@ features = [
     "bevy_render",
     "bevy_state",
     "bevy_winit",
+    "gltf_animation",
     "png",
     "reflect_auto_register",
     "tonemapping_luts",

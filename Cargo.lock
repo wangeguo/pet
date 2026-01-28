@@ -483,6 +483,7 @@ dependencies = [
  "bevy_derive",
  "bevy_ecs",
  "bevy_math",
+ "bevy_mesh",
  "bevy_platform",
  "bevy_reflect",
  "bevy_time",
@@ -803,6 +804,7 @@ checksum = "08372f222676dba313061fc71128209b82f9711e7c5cba222b5c34bf1c5c70fe"
 dependencies = [
  "async-lock",
  "base64",
+ "bevy_animation",
  "bevy_app",
  "bevy_asset",
  "bevy_camera",
@@ -1705,6 +1707,7 @@ dependencies = [
  "config",
  "directories",
  "jiff",
+ "ron",
  "serde",
  "serde_json",
  "thiserror 2.0.18",
@@ -6002,6 +6005,7 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "common",
+ "rand",
  "tracing",
  "tracing-subscriber",
 ]
