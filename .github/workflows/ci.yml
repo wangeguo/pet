@@ -37,6 +37,10 @@ jobs:
           components: clippy
       - uses: taiki-e/install-action@just
       - uses: Swatinem/rust-cache@v2
+      - name: Install Linux dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libglib2.0-dev libasound2-dev libudev-dev libxkbcommon-dev libwayland-dev
       - name: Linting
         run: just clippy
 
@@ -51,6 +55,11 @@ jobs:
       - uses: dtolnay/rust-toolchain@nightly
       - uses: taiki-e/install-action@just
       - uses: Swatinem/rust-cache@v2
+      - name: Install Linux dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libglib2.0-dev libasound2-dev libudev-dev libxkbcommon-dev libwayland-dev
       - name: Build the project
         run: just build
 
@@ -65,5 +74,10 @@ jobs:
       - uses: dtolnay/rust-toolchain@nightly
       - uses: taiki-e/install-action@just
       - uses: Swatinem/rust-cache@v2
+      - name: Install Linux dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libglib2.0-dev libasound2-dev libudev-dev libxkbcommon-dev libwayland-dev
       - name: Test the project
         run: just test
