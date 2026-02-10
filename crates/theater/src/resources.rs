@@ -33,7 +33,8 @@ pub struct PetModelState {
 #[derive(Resource, Default)]
 pub struct DragState {
     pub is_dragging: bool,
-    pub drag_start_cursor: Option<Vec2>,
+    /// Cursor position in screen coordinates when drag started
+    pub drag_start_screen_cursor: Option<IVec2>,
     pub drag_start_window: Option<IVec2>,
 }
 
