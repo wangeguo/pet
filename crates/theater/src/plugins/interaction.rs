@@ -47,15 +47,15 @@ fn handle_drag(
     };
 
     // Mouse button pressed - record start position in screen coordinates
-    if mouse_button.just_pressed(MouseButton::Left) {
-        if let Some(screen_cursor) = cursor_to_screen(&window) {
-            drag_state.drag_start_screen_cursor = Some(screen_cursor);
-            drag_state.drag_start_window = match window.position {
-                WindowPosition::At(pos) => Some(pos),
-                _ => None,
-            };
-            drag_state.is_dragging = false;
-        }
+    if mouse_button.just_pressed(MouseButton::Left)
+        && let Some(screen_cursor) = cursor_to_screen(&window)
+    {
+        drag_state.drag_start_screen_cursor = Some(screen_cursor);
+        drag_state.drag_start_window = match window.position {
+            WindowPosition::At(pos) => Some(pos),
+            _ => None,
+        };
+        drag_state.is_dragging = false;
     }
 
     // Mouse held - check for drag threshold and handle dragging
