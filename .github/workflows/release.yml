@@ -1,0 +1,78 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - v[0-9]+.*
+
+permissions:
+  contents: write
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    name: Build (${{ matrix.platform }})
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - platform: linux-amd64
+            target: x86_64-unknown-linux-gnu
+            runner: ubuntu-latest
+          - platform: linux-arm64
+            target: aarch64-unknown-linux-gnu
+            runner: ubuntu-24.04-arm
+          - platform: darwin-amd64
+            target: x86_64-apple-darwin
+            runner: macos-13
+          - platform: darwin-arm64
+            target: aarch64-apple-darwin
+            runner: macos-latest
+          - platform: windows-amd64
+            target: x86_64-pc-windows-msvc
+            runner: windows-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@nightly
+      - uses: taiki-e/install-action@just
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Install dependencies
+        run: just install-deps
+
+      - name: Build release binaries
+        run: just build-release ${{ matrix.target }}
+
+      - name: Package tar.gz
+        if: runner.os != 'Windows'
+        run: just package-tar ${{ matrix.target }} ${{ matrix.platform }}
+
+      - name: Package zip
+        if: runner.os == 'Windows'
+        run: just package-zip ${{ matrix.target }} ${{ matrix.platform }}
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v6
+        with:
+          name: pet-${{ matrix.platform }}
+          path: pet-*.*
+          if-no-files-found: error
+
+  release:
+    name: Create Release
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v7
+        with:
+          pattern: pet-*
+          merge-multiple: true
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: pet-*.*

@@ -71,6 +71,40 @@ run-theater:
 run-manager:
     cargo run --bin pet-manager
 
+# Build all binaries in release mode for a specific target
+build-release target:
+    cargo build --release --target {{ target }}
+
+# Package release binaries as tar.gz archive
+package-tar target platform:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    version=$(grep -m1 '^version = ' Cargo.toml | sed 's/version = "\(.*\)"/\1/')
+    staging="pet-${version}-{{ platform }}"
+    mkdir -p "${staging}/assets/pets"
+    for bin in pet pet-tray pet-theater pet-manager; do
+        cp "target/{{ target }}/release/${bin}" "${staging}/"
+    done
+    cp assets/pets/duck.glb "${staging}/assets/pets/"
+    tar czf "${staging}.tar.gz" "${staging}"
+    rm -rf "${staging}"
+    echo "Created ${staging}.tar.gz"
+
+# Package release binaries as zip archive (Windows)
+package-zip target platform:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    version=$(grep -m1 '^version = ' Cargo.toml | sed 's/version = "\(.*\)"/\1/')
+    staging="pet-${version}-{{ platform }}"
+    mkdir -p "${staging}/assets/pets"
+    for bin in pet pet-tray pet-theater pet-manager; do
+        cp "target/{{ target }}/release/${bin}.exe" "${staging}/"
+    done
+    cp assets/pets/duck.glb "${staging}/assets/pets/"
+    7z a "${staging}.zip" "${staging}"
+    rm -rf "${staging}"
+    echo "Created ${staging}.zip"
+
 # Bump version in Cargo.toml (interactive)
 bump-version:
     #!/usr/bin/env bash
