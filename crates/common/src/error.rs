@@ -28,6 +28,9 @@ pub enum Error {
 
     #[error("Invalid configuration: {0}")]
     InvalidConfig(String),
+
+    #[error("Assets directory not found")]
+    AssetsNotFound,
 }
 
 pub type Result<T> = std::result::Result<T, Error>;

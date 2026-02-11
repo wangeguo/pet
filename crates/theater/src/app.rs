@@ -8,7 +8,6 @@ use bevy::render::settings::WgpuSettings;
 use bevy::window::{PresentMode, WindowLevel, WindowResolution};
 use bevy::winit::{UpdateMode, WinitSettings};
 use common::{AppConfig, AppPaths};
-use std::path::PathBuf;
 
 /// Default window size for the pet theater
 const DEFAULT_WINDOW_SIZE: u32 = 400;
@@ -25,7 +24,7 @@ pub fn run_theater() -> common::Result<()> {
         paths,
     };
 
-    let assets_dir = find_assets_dir();
+    let assets_dir = AppPaths::find_assets_dir()?;
 
     App::new()
         .add_plugins(
@@ -76,33 +75,4 @@ pub fn run_theater() -> common::Result<()> {
         .run();
 
     Ok(())
-}
-
-/// Find the assets directory
-fn find_assets_dir() -> PathBuf {
-    let exe_dir = std::env::current_exe()
-        .ok()
-        .and_then(|p| p.parent().map(|p| p.to_path_buf()));
-
-    let candidates = [
-        PathBuf::from("assets"),
-        PathBuf::from("../../assets"),
-        exe_dir
-            .clone()
-            .map(|p| p.join("../../assets"))
-            .unwrap_or_default(),
-        exe_dir
-            .map(|p| p.join("../../../assets"))
-            .unwrap_or_default(),
-    ];
-
-    for candidate in &candidates {
-        if let Ok(path) = candidate.canonicalize()
-            && path.is_dir()
-        {
-            return path;
-        }
-    }
-
-    PathBuf::from("assets")
 }
