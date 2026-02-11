@@ -1,0 +1,49 @@
+name: Package RPM
+
+on:
+  workflow_run:
+    workflows: ["Release"]
+    types:
+      - completed
+
+permissions:
+  contents: write
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  rpm:
+    name: RPM (${{ matrix.platform }})
+    if: github.event.workflow_run.conclusion == 'success'
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - platform: linux-amd64
+            target: x86_64-unknown-linux-gnu
+            runner: ubuntu-latest
+          - platform: linux-arm64
+            target: aarch64-unknown-linux-gnu
+            runner: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@nightly
+      - uses: taiki-e/install-action@just
+
+      - name: Install packaging tools
+        run: just install-packaging-tools rpm
+
+      - name: Download release binaries
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: just download-release ${{ github.event.workflow_run.head_branch }} ${{ matrix.platform }}
+
+      - name: Package RPM
+        run: just package-rpm ${{ matrix.target }}
+
+      - name: Upload to GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release upload ${{ github.event.workflow_run.head_branch }} pet-*.rpm

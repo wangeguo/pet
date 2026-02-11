@@ -39,3 +39,27 @@ assets = [
     ["assets/packaging/linux/graphics/app_256x256.png", "/usr/share/icons/hicolor/256x256/apps/pet.png", "644"],
     ["assets/packaging/linux/graphics/app_512x512.png", "/usr/share/icons/hicolor/512x512/apps/pet.png", "644"],
 ]
+
+[package.metadata.generate-rpm]
+assets = [
+    # Binaries
+    { source = "target/release/pet",         dest = "/usr/local/bin/", mode = "755" },
+    { source = "target/release/pet-tray",    dest = "/usr/local/bin/", mode = "755" },
+    { source = "target/release/pet-theater", dest = "/usr/local/bin/", mode = "755" },
+    { source = "target/release/pet-manager", dest = "/usr/local/bin/", mode = "755" },
+
+    # Runtime assets
+    { source = "assets/pets/duck.glb", dest = "/usr/local/share/pet/assets/pets/duck.glb", mode = "644" },
+
+    # Desktop entry
+    { source = "assets/packaging/linux/pet.desktop", dest = "/usr/share/applications/pet.desktop", mode = "644" },
+
+    # Icons
+    { source = "assets/packaging/linux/graphics/app_16x16.png",   dest = "/usr/share/icons/hicolor/16x16/apps/pet.png",   mode = "644" },
+    { source = "assets/packaging/linux/graphics/app_32x32.png",   dest = "/usr/share/icons/hicolor/32x32/apps/pet.png",   mode = "644" },
+    { source = "assets/packaging/linux/graphics/app_48x48.png",   dest = "/usr/share/icons/hicolor/48x48/apps/pet.png",   mode = "644" },
+    { source = "assets/packaging/linux/graphics/app_64x64.png",   dest = "/usr/share/icons/hicolor/64x64/apps/pet.png",   mode = "644" },
+    { source = "assets/packaging/linux/graphics/app_128x128.png", dest = "/usr/share/icons/hicolor/128x128/apps/pet.png", mode = "644" },
+    { source = "assets/packaging/linux/graphics/app_256x256.png", dest = "/usr/share/icons/hicolor/256x256/apps/pet.png", mode = "644" },
+    { source = "assets/packaging/linux/graphics/app_512x512.png", dest = "/usr/share/icons/hicolor/512x512/apps/pet.png", mode = "644" },
+]

@@ -138,6 +138,9 @@ install-packaging-tools *tools:
             deb)
                 cargo install cargo-deb
                 ;;
+            rpm)
+                cargo install cargo-generate-rpm
+                ;;
             *)
                 echo "Unknown packaging tool: ${tool}"
                 exit 1
@@ -160,6 +163,22 @@ package-deb target:
     deb_file=$(ls target/{{ target }}/debian/*.deb)
     mv "${deb_file}" "pet-${version}-${platform}.deb"
     echo "Created pet-${version}-${platform}.deb"
+
+# Package as RPM
+package-rpm target:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    cargo generate-rpm --manifest-path crates/app/Cargo.toml --target {{ target }}
+    version=$(grep -m1 '^version = ' Cargo.toml | sed 's/version = "\(.*\)"/\1/')
+    target="{{ target }}"
+    case "${target}" in
+        x86_64*)  platform="linux-amd64" ;;
+        aarch64*) platform="linux-arm64" ;;
+        *)        platform="${target}" ;;
+    esac
+    rpm_file=$(ls target/{{ target }}/generate-rpm/*.rpm)
+    mv "${rpm_file}" "pet-${version}-${platform}.rpm"
+    echo "Created pet-${version}-${platform}.rpm"
 
 # Bump version in Cargo.toml (interactive)
 bump-version:
