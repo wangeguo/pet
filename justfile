@@ -129,6 +129,38 @@ download-release tag platform:
     rm -rf "${archive}" "${archive}".tar.gz "${archive}".zip
     echo "Binaries extracted to ${target_dir}/"
 
+# Install packaging tools (cargo-deb, cargo-generate-rpm, cargo-wix, etc.)
+install-packaging-tools *tools:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    for tool in {{ tools }}; do
+        case "${tool}" in
+            deb)
+                cargo install cargo-deb
+                ;;
+            *)
+                echo "Unknown packaging tool: ${tool}"
+                exit 1
+                ;;
+        esac
+    done
+
+# Package as Debian .deb
+package-deb target:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    cargo deb --no-build --no-strip --manifest-path crates/app/Cargo.toml --target {{ target }}
+    version=$(grep -m1 '^version = ' Cargo.toml | sed 's/version = "\(.*\)"/\1/')
+    target="{{ target }}"
+    case "${target}" in
+        x86_64*)  platform="linux-amd64" ;;
+        aarch64*) platform="linux-arm64" ;;
+        *)        platform="${target}" ;;
+    esac
+    deb_file=$(ls target/{{ target }}/debian/*.deb)
+    mv "${deb_file}" "pet-${version}-${platform}.deb"
+    echo "Created pet-${version}-${platform}.deb"
+
 # Bump version in Cargo.toml (interactive)
 bump-version:
     #!/usr/bin/env bash

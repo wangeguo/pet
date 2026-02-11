@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Pet
+Comment=Desktop companion pet application
+Categories=Utility;
+Icon=pet
+Exec=/usr/local/bin/pet
+StartupWMClass=pet
+Terminal=false

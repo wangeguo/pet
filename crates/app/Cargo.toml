@@ -14,3 +14,28 @@ tokio.workspace = true
 notify.workspace = true
 tracing.workspace = true
 tracing-subscriber.workspace = true
+
+[package.metadata.deb]
+section = "Utility"
+assets = [
+    # Binaries
+    ["target/release/pet",         "/usr/local/bin/", "755"],
+    ["target/release/pet-tray",    "/usr/local/bin/", "755"],
+    ["target/release/pet-theater", "/usr/local/bin/", "755"],
+    ["target/release/pet-manager", "/usr/local/bin/", "755"],
+
+    # Runtime assets
+    ["assets/pets/duck.glb", "/usr/local/share/pet/assets/pets/", "644"],
+
+    # Desktop entry
+    ["assets/packaging/linux/pet.desktop", "/usr/share/applications/pet.desktop", "644"],
+
+    # Icons
+    ["assets/packaging/linux/graphics/app_16x16.png",   "/usr/share/icons/hicolor/16x16/apps/pet.png",   "644"],
+    ["assets/packaging/linux/graphics/app_32x32.png",   "/usr/share/icons/hicolor/32x32/apps/pet.png",   "644"],
+    ["assets/packaging/linux/graphics/app_48x48.png",   "/usr/share/icons/hicolor/48x48/apps/pet.png",   "644"],
+    ["assets/packaging/linux/graphics/app_64x64.png",   "/usr/share/icons/hicolor/64x64/apps/pet.png",   "644"],
+    ["assets/packaging/linux/graphics/app_128x128.png", "/usr/share/icons/hicolor/128x128/apps/pet.png", "644"],
+    ["assets/packaging/linux/graphics/app_256x256.png", "/usr/share/icons/hicolor/256x256/apps/pet.png", "644"],
+    ["assets/packaging/linux/graphics/app_512x512.png", "/usr/share/icons/hicolor/512x512/apps/pet.png", "644"],
+]
