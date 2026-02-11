@@ -105,6 +105,30 @@ package-zip target platform:
     rm -rf "${staging}"
     echo "Created ${staging}.zip"
 
+# Download release archive from GitHub Release and extract binaries (CI only)
+download-release tag platform:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    tag="{{ tag }}"
+    version="${tag#v}"
+    archive="pet-${version}-{{ platform }}"
+    target_dir="target/release"
+    mkdir -p "${target_dir}"
+    case "{{ platform }}" in
+        *windows*)
+            gh release download "{{ tag }}" --pattern "${archive}.zip"
+            7z x "${archive}.zip"
+            cp "${archive}"/*.exe "${target_dir}/"
+            ;;
+        *)
+            gh release download "{{ tag }}" --pattern "${archive}.tar.gz"
+            tar xzf "${archive}.tar.gz"
+            cp "${archive}"/pet "${archive}"/pet-tray "${archive}"/pet-theater "${archive}"/pet-manager "${target_dir}/"
+            ;;
+    esac
+    rm -rf "${archive}" "${archive}".tar.gz "${archive}".zip
+    echo "Binaries extracted to ${target_dir}/"
+
 # Bump version in Cargo.toml (interactive)
 bump-version:
     #!/usr/bin/env bash
