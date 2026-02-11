@@ -170,8 +170,11 @@ install-packaging-tools *tools:
 package-deb target:
     #!/usr/bin/env bash
     set -euo pipefail
-    cargo deb --no-build --no-strip --manifest-path crates/app/Cargo.toml --target {{ target }}
     version=$(grep -m1 '^version = ' Cargo.toml | sed 's/version = "\(.*\)"/\1/')
+    # Convert semver pre-release to Debian format (0.1.0-rc.1 → 0.1.0~rc.1)
+    deb_version="${version//-/\~}"
+    cargo deb --no-build --no-strip --manifest-path crates/app/Cargo.toml \
+        --target {{ target }} --deb-version "${deb_version}"
     target="{{ target }}"
     case "${target}" in
         x86_64*)  platform="linux-amd64" ;;
@@ -186,8 +189,11 @@ package-deb target:
 package-rpm target:
     #!/usr/bin/env bash
     set -euo pipefail
-    cargo generate-rpm --manifest-path crates/app/Cargo.toml --target {{ target }}
     version=$(grep -m1 '^version = ' Cargo.toml | sed 's/version = "\(.*\)"/\1/')
+    # Convert semver pre-release to RPM format (0.1.0-rc.1 → 0.1.0~rc.1)
+    rpm_version="${version//-/\~}"
+    cargo generate-rpm --manifest-path crates/app/Cargo.toml --target {{ target }} \
+        -s "version = \"${rpm_version}\""
     target="{{ target }}"
     case "${target}" in
         x86_64*)  platform="linux-amd64" ;;
@@ -209,9 +215,10 @@ package-dmg platform:
     app_dir="target/release/bundle/osx/${app_name}"
     dmg_name="pet-${version}-{{ platform }}.dmg"
 
-    # Update Info.plist version
+    # Update Info.plist version (CFBundleShortVersionString only accepts X.Y.Z)
+    short_version="${version%%-*}"
     sed -i'.bak' \
-        -e "s/0\.0\.0/${version}/g" \
+        -e "s/0\.0\.0/${short_version}/g" \
         -e "s/fffffff/${GITHUB_SHA:0:7}/g" \
         "${resource_dir}/Info.plist"
 
@@ -265,9 +272,9 @@ bump-version:
     # Prompt for new version
     read -p "New version: " new_version
 
-    # Validate version format
-    if ! [[ "$new_version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-        echo "Error: Version must be in format X.Y.Z (e.g., 0.1.0)"
+    # Validate version format (X.Y.Z or X.Y.Z-pre.N)
+    if ! [[ "$new_version" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-.+)?$ ]]; then
+        echo "Error: Version must be in format X.Y.Z or X.Y.Z-suffix (e.g., 0.1.0, 0.1.0-rc.1)"
         exit 1
     fi
 
@@ -275,7 +282,7 @@ bump-version:
 
     # Update Cargo.toml
     sed -i '' -E \
-        "s/^version = \"[0-9]+\.[0-9]+\.[0-9]+\"/version = \"$new_version\"/" \
+        "s/^version = \"[0-9]+\.[0-9]+\.[0-9]+(-.+)?\"/version = \"$new_version\"/" \
         Cargo.toml
     echo "Updated Cargo.toml"
 
