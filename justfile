@@ -2,6 +2,24 @@
 default:
     just --list
 
+# Install system build dependencies
+install-deps:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    if [ "$(uname -s)" = "Linux" ]; then
+        sudo apt-get update
+        sudo apt-get install -y \
+            libgtk-3-dev \
+            libxdo-dev \
+            libappindicator3-dev \
+            libasound2-dev \
+            libudev-dev \
+            libxkbcommon-dev \
+            libwayland-dev
+    else
+        echo "No system dependencies to install on this platform."
+    fi
+
 # Build the project
 build:
     cargo build --workspace --all-features --all-targets
