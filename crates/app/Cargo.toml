@@ -63,3 +63,7 @@ assets = [
     { source = "assets/packaging/linux/graphics/app_256x256.png", dest = "/usr/share/icons/hicolor/256x256/apps/pet.png", mode = "644" },
     { source = "assets/packaging/linux/graphics/app_512x512.png", dest = "/usr/share/icons/hicolor/512x512/apps/pet.png", mode = "644" },
 ]
+
+[package.metadata.wix]
+eula = false
+include = ["assets\\packaging\\windows\\setup.wxs"]

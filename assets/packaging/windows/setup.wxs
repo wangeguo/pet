@@ -1,0 +1,153 @@
+<?xml version='1.0' encoding='windows-1252'?>
+
+<?if $(sys.BUILDARCH) = x64 or $(sys.BUILDARCH) = arm64 ?>
+    <?define PlatformProgramFilesFolder = "ProgramFiles64Folder" ?>
+<?else ?>
+    <?define PlatformProgramFilesFolder = "ProgramFilesFolder" ?>
+<?endif ?>
+
+<Wix xmlns='http://schemas.microsoft.com/wix/2006/wi'>
+
+    <Product
+        Id='*'
+        Name='Pet'
+        UpgradeCode='E8F3B6A1-7C4D-4E5F-9A2B-1D3C5E7F9A0B'
+        Manufacturer='Pet Project'
+        Language='1033'
+        Codepage='1252'
+        Version='$(var.Version)'>
+
+        <Package Id='*'
+            Keywords='Installer'
+            Description='Desktop companion pet application'
+            Manufacturer='Pet Project'
+            InstallerVersion='450'
+            Languages='1033'
+            Compressed='yes'
+            InstallScope='perMachine'
+            SummaryCodepage='1252'
+            />
+
+        <MajorUpgrade
+            Schedule='afterInstallInitialize'
+            DowngradeErrorMessage='A newer version of [ProductName] is already installed. Setup will now exit.'/>
+
+        <Media Id='1' Cabinet='media1.cab' EmbedCab='yes' DiskPrompt='CD-ROM #1'/>
+        <Property Id='DiskPrompt' Value='Pet Installation'/>
+
+        <Directory Id='TARGETDIR' Name='SourceDir'>
+            <Directory Id='$(var.PlatformProgramFilesFolder)' Name='PFiles'>
+                <Directory Id='APPLICATIONFOLDER' Name='Pet'>
+
+                    <Component Id='License' Guid='*'>
+                        <File Id='LicenseFile'
+                            DiskId='1'
+                            Source='LICENSE'
+                            KeyPath='yes'/>
+                    </Component>
+
+                    <Directory Id='Bin' Name='bin'>
+                        <Component Id='Path' Guid='A1B2C3D4-E5F6-7890-A1B2-C3D4E5F67890' KeyPath='yes'>
+                            <Environment
+                                Id='PATH'
+                                Name='PATH'
+                                Value='[Bin]'
+                                Permanent='no'
+                                Part='last'
+                                Action='set'
+                                System='yes'/>
+                        </Component>
+                        <Component Id='binary_pet' Guid='*'>
+                            <File
+                                Id='exe_pet'
+                                Name='pet.exe'
+                                DiskId='1'
+                                Source='$(var.CargoTargetBinDir)\pet.exe'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='binary_pet_tray' Guid='*'>
+                            <File
+                                Id='exe_pet_tray'
+                                Name='pet-tray.exe'
+                                DiskId='1'
+                                Source='$(var.CargoTargetBinDir)\pet-tray.exe'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='binary_pet_theater' Guid='*'>
+                            <File
+                                Id='exe_pet_theater'
+                                Name='pet-theater.exe'
+                                DiskId='1'
+                                Source='$(var.CargoTargetBinDir)\pet-theater.exe'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='binary_pet_manager' Guid='*'>
+                            <File
+                                Id='exe_pet_manager'
+                                Name='pet-manager.exe'
+                                DiskId='1'
+                                Source='$(var.CargoTargetBinDir)\pet-manager.exe'
+                                KeyPath='yes'/>
+                        </Component>
+                    </Directory>
+
+                    <Directory Id='Assets' Name='assets'>
+                        <Directory Id='AssetsPets' Name='pets'>
+                            <Component Id='asset_duck' Guid='*'>
+                                <File
+                                    Id='file_duck_glb'
+                                    Name='duck.glb'
+                                    DiskId='1'
+                                    Source='assets\pets\duck.glb'
+                                    KeyPath='yes'/>
+                            </Component>
+                        </Directory>
+                    </Directory>
+
+                </Directory>
+            </Directory>
+        </Directory>
+
+        <Feature
+            Id='Binaries'
+            Title='Application'
+            Description='Installs all binaries, assets, and the license.'
+            Level='1'
+            ConfigurableDirectory='APPLICATIONFOLDER'
+            AllowAdvertise='no'
+            Display='expand'
+            Absent='disallow'>
+
+            <ComponentRef Id='License'/>
+            <ComponentRef Id='binary_pet'/>
+            <ComponentRef Id='binary_pet_tray'/>
+            <ComponentRef Id='binary_pet_theater'/>
+            <ComponentRef Id='binary_pet_manager'/>
+            <ComponentRef Id='asset_duck'/>
+
+            <Feature
+                Id='Environment'
+                Title='PATH Environment Variable'
+                Description='Add the install location of the [ProductName] executable to the PATH system environment variable.'
+                Level='1'
+                Absent='allow'>
+                <ComponentRef Id='Path'/>
+            </Feature>
+        </Feature>
+
+        <SetProperty Id='ARPINSTALLLOCATION' Value='[APPLICATIONFOLDER]' After='CostFinalize'/>
+
+        <Icon Id='ProductICO' SourceFile='assets\packaging\windows\graphics\app.ico'/>
+        <Property Id='ARPPRODUCTICON' Value='ProductICO' />
+
+        <UI>
+            <UIRef Id='WixUI_FeatureTree'/>
+            <Publish Dialog='WelcomeDlg' Control='Next' Event='NewDialog' Value='CustomizeDlg' Order='99'>1</Publish>
+            <Publish Dialog='CustomizeDlg' Control='Back' Event='NewDialog' Value='WelcomeDlg' Order='99'>1</Publish>
+        </UI>
+
+        <WixVariable Id="WixUIBannerBmp" Value="assets\packaging\windows\graphics\banner.bmp"/>
+        <WixVariable Id="WixUIDialogBmp" Value="assets\packaging\windows\graphics\dialog.bmp"/>
+    </Product>
+
+</Wix>

@@ -145,6 +145,20 @@ install-packaging-tools *tools:
                 cargo install toml-cli
                 brew install create-dmg
                 ;;
+            msi)
+                cargo install cargo-wix
+                # Install WiX Toolset v3.11 binaries
+                wix_dir="${TEMP:-/tmp}/wix"
+                if [ ! -f "${wix_dir}/candle.exe" ]; then
+                    curl -L -o "${wix_dir}.zip" \
+                        "https://github.com/wixtoolset/wix3/releases/download/wix3112rtm/wix311-binaries.zip"
+                    mkdir -p "${wix_dir}"
+                    unzip -o "${wix_dir}.zip" -d "${wix_dir}"
+                    rm -f "${wix_dir}.zip"
+                fi
+                echo "${wix_dir}" >> "${GITHUB_PATH:-/dev/null}"
+                export PATH="${wix_dir}:${PATH}"
+                ;;
             *)
                 echo "Unknown packaging tool: ${tool}"
                 exit 1
@@ -228,6 +242,16 @@ package-dmg platform:
     # Restore Info.plist
     mv "${resource_dir}/Info.plist.bak" "${resource_dir}/Info.plist"
     echo "Created ${dmg_name}"
+
+# Package as Windows .msi
+package-msi:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    cargo wix --no-build --nocapture --manifest-path crates/app/Cargo.toml
+    version=$(grep -m1 '^version = ' Cargo.toml | sed 's/version = "\(.*\)"/\1/')
+    msi_file=$(ls target/wix/*.msi)
+    mv "${msi_file}" "pet-${version}-windows-amd64.msi"
+    echo "Created pet-${version}-windows-amd64.msi"
 
 # Bump version in Cargo.toml (interactive)
 bump-version:
