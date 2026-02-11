@@ -10,7 +10,7 @@ path = "src/main.rs"
 
 [dependencies]
 common.workspace = true
+tracing-subscriber.workspace = true
+tracing.workspace = true
 tray-icon.workspace = true
 winit.workspace = true
-tracing.workspace = true
-tracing-subscriber.workspace = true
