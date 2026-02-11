@@ -1,0 +1,45 @@
+name: Package DMG
+
+on:
+  workflow_run:
+    workflows: ["Release"]
+    types:
+      - completed
+
+permissions:
+  contents: write
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  dmg:
+    name: DMG (${{ matrix.platform }})
+    if: github.event.workflow_run.conclusion == 'success'
+    runs-on: macos-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - platform: darwin-amd64
+          - platform: darwin-arm64
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@nightly
+      - uses: taiki-e/install-action@just
+
+      - name: Install packaging tools
+        run: just install-packaging-tools dmg
+
+      - name: Download release binaries
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: just download-release ${{ github.event.workflow_run.head_branch }} ${{ matrix.platform }}
+
+      - name: Package DMG
+        run: just package-dmg ${{ matrix.platform }}
+
+      - name: Upload to GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release upload ${{ github.event.workflow_run.head_branch }} pet-*.dmg

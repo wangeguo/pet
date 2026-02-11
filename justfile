@@ -141,6 +141,10 @@ install-packaging-tools *tools:
             rpm)
                 cargo install cargo-generate-rpm
                 ;;
+            dmg)
+                cargo install toml-cli
+                brew install create-dmg
+                ;;
             *)
                 echo "Unknown packaging tool: ${tool}"
                 exit 1
@@ -179,6 +183,51 @@ package-rpm target:
     rpm_file=$(ls target/{{ target }}/generate-rpm/*.rpm)
     mv "${rpm_file}" "pet-${version}-${platform}.rpm"
     echo "Created pet-${version}-${platform}.rpm"
+
+# Package as macOS .dmg
+package-dmg platform:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    version=$(toml get Cargo.toml workspace.package.version --raw)
+    app_name="Pet.app"
+    vol_name="Pet Installer"
+    resource_dir="assets/packaging/macos"
+    app_dir="target/release/bundle/osx/${app_name}"
+    dmg_name="pet-${version}-{{ platform }}.dmg"
+
+    # Update Info.plist version
+    sed -i'.bak' \
+        -e "s/0\.0\.0/${version}/g" \
+        -e "s/fffffff/${GITHUB_SHA:0:7}/g" \
+        "${resource_dir}/Info.plist"
+
+    # Build .app bundle
+    mkdir -p "${app_dir}/Contents/"{MacOS,Resources/assets/pets}
+    cp "${resource_dir}/Info.plist" "${app_dir}/Contents/"
+    cp "${resource_dir}/graphics/app.icns" "${app_dir}/Contents/Resources/"
+    cp "${resource_dir}/wrapper.sh" "${app_dir}/Contents/MacOS/"
+    chmod +x "${app_dir}/Contents/MacOS/wrapper.sh"
+    for bin in pet pet-tray pet-theater pet-manager; do
+        cp "target/release/${bin}" "${app_dir}/Contents/MacOS/"
+    done
+    cp assets/pets/duck.glb "${app_dir}/Contents/Resources/assets/pets/"
+
+    # Create DMG
+    create-dmg \
+        --volname "${vol_name}" \
+        --background "${resource_dir}/graphics/dmg-background.png" \
+        --window-pos 200 120 \
+        --window-size 900 450 \
+        --icon-size 100 \
+        --app-drop-link 620 240 \
+        --icon "${app_name}" 300 240 \
+        --hide-extension "${app_name}" \
+        "${dmg_name}" \
+        "target/release/bundle/osx/"
+
+    # Restore Info.plist
+    mv "${resource_dir}/Info.plist.bak" "${resource_dir}/Info.plist"
+    echo "Created ${dmg_name}"
 
 # Bump version in Cargo.toml (interactive)
 bump-version:
