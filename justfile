@@ -204,7 +204,7 @@ package-rpm target:
     for bin in pet pet-tray pet-theater pet-manager; do
         cp "target/release/${bin}" "target/{{ target }}/release/"
     done
-    cargo generate-rpm -p app --target {{ target }} \
+    cargo generate-rpm -p crates/app --target {{ target }} \
         -s "version = \"${rpm_version}\""
     target="{{ target }}"
     case "${target}" in
