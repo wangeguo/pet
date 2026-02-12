@@ -79,6 +79,7 @@ pub enum Action {
     MoveTo { x: f32, y: f32 },
     Scale { factor: f32 },
     SetExpression { expression: String },
+    Spin { turns: f32 },
     Wait { duration: f32 },
     Random { scripts: Vec<String> },
     Bounce { height: f32 },
@@ -109,6 +110,7 @@ impl BehaviorScript {
                             "idle".to_string(),
                             "walk".to_string(),
                             "bounce".to_string(),
+                            "spin".to_string(),
                         ],
                     },
                 },
@@ -235,6 +237,40 @@ impl BehaviorScript {
     }
 
     #[must_use]
+    pub fn spin() -> Self {
+        Self {
+            id: "spin".to_string(),
+            duration: Some(3.0),
+            keyframes: vec![
+                Keyframe {
+                    time: 0.0,
+                    action: Action::PlayAnimation {
+                        name: "idle".to_string(),
+                    },
+                },
+                Keyframe {
+                    time: 0.0,
+                    action: Action::Scale { factor: 0.9 },
+                },
+                Keyframe {
+                    time: 0.3,
+                    action: Action::Spin { turns: 2.0 },
+                },
+                Keyframe {
+                    time: 0.3,
+                    action: Action::Scale { factor: 1.1 },
+                },
+                Keyframe {
+                    time: 2.0,
+                    action: Action::Scale { factor: 1.0 },
+                },
+            ],
+            next: Some("idle".to_string()),
+            interruptible: true,
+        }
+    }
+
+    #[must_use]
     pub fn builtin_scripts() -> Vec<Self> {
         vec![
             Self::idle(),
@@ -242,6 +278,7 @@ impl BehaviorScript {
             Self::happy(),
             Self::sleep(),
             Self::bounce(),
+            Self::spin(),
         ]
     }
 }
