@@ -5,6 +5,7 @@ edition.workspace = true
 description = "Shared library for Pet desktop companion"
 
 [dependencies]
+auto-launch.workspace = true
 config.workspace = true
 directories.workspace = true
 jiff.workspace = true

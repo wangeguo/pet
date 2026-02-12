@@ -1,10 +1,10 @@
 mod menu;
 
-use common::Result;
-use common::config::AppState;
+use common::config::{AppConfig, AppState};
 use common::paths::AppPaths;
+use common::{Result, autostart};
 use menu::build_menu;
-use tracing::info;
+use tracing::{error, info};
 use tray_icon::{Icon, TrayIconBuilder};
 use winit::application::ApplicationHandler;
 use winit::event::WindowEvent;
@@ -23,11 +23,12 @@ fn main() -> Result<()> {
 
     let paths = AppPaths::new()?;
     let state = AppState::load(&paths).unwrap_or_default();
+    let config = AppConfig::load(&paths).unwrap_or_default();
 
     let event_loop = EventLoop::new().expect("Failed to create event loop");
     event_loop.set_control_flow(ControlFlow::Wait);
 
-    let mut app = TrayApp::new(paths, state);
+    let mut app = TrayApp::new(paths, state, config);
 
     event_loop
         .run_app(&mut app)
@@ -39,21 +40,23 @@ fn main() -> Result<()> {
 struct TrayApp {
     paths: AppPaths,
     state: AppState,
+    config: AppConfig,
     tray_icon: Option<tray_icon::TrayIcon>,
 }
 
 impl TrayApp {
-    fn new(paths: AppPaths, state: AppState) -> Self {
+    fn new(paths: AppPaths, state: AppState, config: AppConfig) -> Self {
         Self {
             paths,
             state,
+            config,
             tray_icon: None,
         }
     }
 
     fn create_tray_icon(&mut self) {
         let icon = create_default_icon();
-        let menu = build_menu(self.state.pet_visible);
+        let menu = build_menu(self.state.pet_visible, self.config.auto_start);
 
         let tray_icon = TrayIconBuilder::new()
             .with_menu(Box::new(menu))
@@ -64,6 +67,13 @@ impl TrayApp {
 
         self.tray_icon = Some(tray_icon);
         info!("Tray icon created");
+    }
+
+    fn rebuild_menu(&self) {
+        if let Some(ref tray) = self.tray_icon {
+            let menu = build_menu(self.state.pet_visible, self.config.auto_start);
+            tray.set_menu(Some(Box::new(menu)));
+        }
     }
 }
 
@@ -89,10 +99,15 @@ impl ApplicationHandler for TrayApp {
                     info!("Toggle pet visibility");
                     self.state.pet_visible = !self.state.pet_visible;
                     let _ = self.state.save(&self.paths);
+                    self.rebuild_menu();
+                }
+                "auto_start" => {
+                    info!("Toggle auto-start");
+                    self.config.auto_start = !self.config.auto_start;
+                    let _ = self.config.save(&self.paths);
 
-                    if let Some(ref tray) = self.tray_icon {
-                        let menu = build_menu(self.state.pet_visible);
-                        tray.set_menu(Some(Box::new(menu)));
+                    if let Err(e) = autostart::sync_autostart(self.config.auto_start) {
+                        error!("Failed to sync auto-start: {e}");
                     }
                 }
                 "open_manager" => {

@@ -1,3 +1,4 @@
+pub mod autostart;
 pub mod config;
 pub mod error;
 pub mod models;
