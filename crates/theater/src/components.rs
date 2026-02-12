@@ -86,3 +86,16 @@ pub struct BounceTween {
     /// Time elapsed since bounce started
     pub elapsed: f32,
 }
+
+/// Component for smooth rotation tweening (Spin action)
+#[derive(Component)]
+pub struct RotationTween {
+    /// Starting rotation
+    pub start_rotation: Quat,
+    /// Total rotation angle in radians
+    pub total_angle: f32,
+    /// Duration of the tween in seconds
+    pub duration: f32,
+    /// Time elapsed since tween started
+    pub elapsed: f32,
+}

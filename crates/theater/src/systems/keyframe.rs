@@ -4,7 +4,7 @@ use bevy::prelude::*;
 use common::script::Action;
 use rand::prelude::IndexedRandom;
 
-use crate::components::{BounceTween, MovementTween, ReplayState, ScaleTween};
+use crate::components::{BounceTween, MovementTween, ReplayState, RotationTween, ScaleTween};
 use crate::events::{ExecuteActionEvent, PlayAnimationEvent, SwitchScriptEvent};
 use crate::resources::ScriptLibrary;
 
@@ -84,6 +84,18 @@ pub fn dispatch_actions(
                         start_scale: transform.scale,
                         target_scale: Vec3::splat(*factor),
                         duration: 0.3, // Quick scale transition
+                        elapsed: 0.0,
+                    });
+                }
+            }
+
+            Action::Spin { turns } => {
+                if let Ok(transform) = query.get(event.entity) {
+                    let total_angle = *turns * std::f32::consts::TAU;
+                    commands.entity(event.entity).insert(RotationTween {
+                        start_rotation: transform.rotation,
+                        total_angle,
+                        duration: turns.abs() * 0.8, // ~0.8s per full turn
                         elapsed: 0.0,
                     });
                 }
