@@ -4,7 +4,7 @@ use bevy::prelude::*;
 use common::script::Action;
 use rand::prelude::IndexedRandom;
 
-use crate::components::{MovementTween, ReplayState, ScaleTween};
+use crate::components::{BounceTween, MovementTween, ReplayState, ScaleTween};
 use crate::events::{ExecuteActionEvent, PlayAnimationEvent, SwitchScriptEvent};
 use crate::resources::ScriptLibrary;
 
@@ -98,6 +98,17 @@ pub fn dispatch_actions(
                     switch_script_events.write(SwitchScriptEvent {
                         script_id: selected.clone(),
                         force: false,
+                    });
+                }
+            }
+
+            Action::Bounce { height } => {
+                if let Ok(transform) = query.get(event.entity) {
+                    commands.entity(event.entity).insert(BounceTween {
+                        base_y: transform.translation.y,
+                        height: *height,
+                        duration: 0.4,
+                        elapsed: 0.0,
                     });
                 }
             }

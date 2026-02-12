@@ -73,3 +73,16 @@ pub struct ScaleTween {
     /// Time elapsed since tween started
     pub elapsed: f32,
 }
+
+/// Component for bounce tweening (Bounce action)
+#[derive(Component)]
+pub struct BounceTween {
+    /// Base Y position to bounce from
+    pub base_y: f32,
+    /// Peak height of the bounce
+    pub height: f32,
+    /// Duration of the bounce in seconds
+    pub duration: f32,
+    /// Time elapsed since bounce started
+    pub elapsed: f32,
+}
