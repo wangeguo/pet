@@ -1,5 +1,6 @@
 mod process;
 
+use common::autostart;
 use common::paths::AppPaths;
 use common::storage::StorageService;
 use common::{AppConfig, Result};
@@ -25,6 +26,10 @@ async fn main() -> Result<()> {
 
     let config = AppConfig::load(&paths)?;
     info!("Loaded configuration with {} pets", config.pets.len());
+
+    if let Err(e) = autostart::sync_autostart(config.auto_start) {
+        error!("Failed to sync auto-start setting: {e}");
+    }
 
     let mut manager = ProcessManager::new(paths.clone());
 

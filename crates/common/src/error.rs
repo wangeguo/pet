@@ -31,6 +31,9 @@ pub enum Error {
 
     #[error("Assets directory not found")]
     AssetsNotFound,
+
+    #[error("Auto-start error: {0}")]
+    AutoStart(String),
 }
 
 pub type Result<T> = std::result::Result<T, Error>;
