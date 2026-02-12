@@ -123,7 +123,9 @@ download-release tag platform:
         *)
             gh release download "{{ tag }}" --pattern "${archive}.tar.gz"
             tar xzf "${archive}.tar.gz"
-            cp "${archive}"/pet "${archive}"/pet-tray "${archive}"/pet-theater "${archive}"/pet-manager "${target_dir}/"
+            for bin in pet pet-tray pet-theater pet-manager; do
+                cp "${archive}/${bin}" "${target_dir}/"
+            done
             ;;
     esac
     rm -rf "${archive}" "${archive}".tar.gz "${archive}".zip
@@ -173,6 +175,11 @@ package-deb target:
     version=$(grep -m1 '^version = ' Cargo.toml | sed 's/version = "\(.*\)"/\1/')
     # Convert semver pre-release to Debian format (0.1.0-rc.1 → 0.1.0~rc.1)
     deb_version="${version//-/\~}"
+    # cargo-deb rewrites target/release/ to target/<target>/release/ when --target is used
+    mkdir -p "target/{{ target }}/release"
+    for bin in pet pet-tray pet-theater pet-manager; do
+        cp "target/release/${bin}" "target/{{ target }}/release/"
+    done
     cargo deb --no-build --no-strip --manifest-path crates/app/Cargo.toml \
         --target {{ target }} --deb-version "${deb_version}"
     target="{{ target }}"
@@ -192,7 +199,12 @@ package-rpm target:
     version=$(grep -m1 '^version = ' Cargo.toml | sed 's/version = "\(.*\)"/\1/')
     # Convert semver pre-release to RPM format (0.1.0-rc.1 → 0.1.0~rc.1)
     rpm_version="${version//-/\~}"
-    cargo generate-rpm --manifest-path crates/app/Cargo.toml --target {{ target }} \
+    # cargo-generate-rpm rewrites target/release/ to target/<target>/release/ when --target is used
+    mkdir -p "target/{{ target }}/release"
+    for bin in pet pet-tray pet-theater pet-manager; do
+        cp "target/release/${bin}" "target/{{ target }}/release/"
+    done
+    cargo generate-rpm -p app --target {{ target }} \
         -s "version = \"${rpm_version}\""
     target="{{ target }}"
     case "${target}" in
@@ -254,7 +266,7 @@ package-dmg platform:
 package-msi:
     #!/usr/bin/env bash
     set -euo pipefail
-    cargo wix --no-build --nocapture --manifest-path crates/app/Cargo.toml
+    cargo wix --no-build --nocapture -p app
     version=$(grep -m1 '^version = ' Cargo.toml | sed 's/version = "\(.*\)"/\1/')
     msi_file=$(ls target/wix/*.msi)
     mv "${msi_file}" "pet-${version}-windows-amd64.msi"
