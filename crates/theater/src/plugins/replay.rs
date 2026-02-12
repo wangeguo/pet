@@ -12,7 +12,7 @@ use crate::resources::{AnimationMap, PetModelState, ScriptLibrary};
 use crate::systems::{
     advance_replay_time, check_script_completion, dispatch_actions, execute_keyframes,
     handle_pet_click, handle_script_transition, link_animation_player, play_animation,
-    setup_animation_graph, update_movement_tween, update_scale_tween,
+    setup_animation_graph, update_bounce_tween, update_movement_tween, update_scale_tween,
 };
 
 /// Plugin for behavior script replay system
@@ -59,6 +59,7 @@ impl Plugin for ReplayPlugin {
                     play_animation,
                     update_movement_tween,
                     update_scale_tween,
+                    update_bounce_tween,
                     // Script completion check
                     check_script_completion,
                 )

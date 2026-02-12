@@ -81,6 +81,7 @@ pub enum Action {
     SetExpression { expression: String },
     Wait { duration: f32 },
     Random { scripts: Vec<String> },
+    Bounce { height: f32 },
 }
 
 impl BehaviorScript {
@@ -103,7 +104,12 @@ impl BehaviorScript {
                 Keyframe {
                     time: 3.0,
                     action: Action::Random {
-                        scripts: vec!["idle".to_string(), "idle".to_string(), "walk".to_string()],
+                        scripts: vec![
+                            "idle".to_string(),
+                            "idle".to_string(),
+                            "walk".to_string(),
+                            "bounce".to_string(),
+                        ],
                     },
                 },
             ],
@@ -187,7 +193,55 @@ impl BehaviorScript {
     }
 
     #[must_use]
+    pub fn bounce() -> Self {
+        Self {
+            id: "bounce".to_string(),
+            duration: Some(3.0),
+            keyframes: vec![
+                Keyframe {
+                    time: 0.0,
+                    action: Action::PlayAnimation {
+                        name: "jump".to_string(),
+                    },
+                },
+                Keyframe {
+                    time: 0.0,
+                    action: Action::Bounce { height: 0.15 },
+                },
+                Keyframe {
+                    time: 0.5,
+                    action: Action::Bounce { height: 0.25 },
+                },
+                Keyframe {
+                    time: 1.2,
+                    action: Action::Bounce { height: 0.2 },
+                },
+                Keyframe {
+                    time: 1.9,
+                    action: Action::Scale { factor: 1.15 },
+                },
+                Keyframe {
+                    time: 2.2,
+                    action: Action::Scale { factor: 1.0 },
+                },
+                Keyframe {
+                    time: 2.5,
+                    action: Action::Bounce { height: 0.1 },
+                },
+            ],
+            next: Some("idle".to_string()),
+            interruptible: true,
+        }
+    }
+
+    #[must_use]
     pub fn builtin_scripts() -> Vec<Self> {
-        vec![Self::idle(), Self::walk(), Self::happy(), Self::sleep()]
+        vec![
+            Self::idle(),
+            Self::walk(),
+            Self::happy(),
+            Self::sleep(),
+            Self::bounce(),
+        ]
     }
 }
