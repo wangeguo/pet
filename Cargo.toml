@@ -5,6 +5,7 @@ members = ["crates/*"]
 [workspace.package]
 version = "0.1.0-rc.5"
 edition = "2024"
+license = "Apache-2.0"
 
 [workspace.dependencies]
 bevy = { version = "0.18", default-features = false }

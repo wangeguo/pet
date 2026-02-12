@@ -2,6 +2,7 @@
 name = "app"
 version.workspace = true
 edition.workspace = true
+license.workspace = true
 description = "Main process for Pet desktop companion"
 
 [[bin]]
