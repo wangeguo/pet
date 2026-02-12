@@ -4,7 +4,7 @@ use bevy::animation::AnimationPlayer;
 use bevy::animation::graph::{AnimationGraph, AnimationGraphHandle};
 use bevy::gltf::Gltf;
 use bevy::prelude::*;
-use tracing::{info, warn};
+use tracing::{debug, info, warn};
 
 use crate::components::{PetAnimationState, PetMarker, ReplayState};
 use crate::events::PlayAnimationEvent;
@@ -143,10 +143,17 @@ pub fn play_animation(
 ) {
     for event in events.read() {
         let Some(node_index) = animation_map.name_to_index.get(&event.animation_name) else {
-            warn!(
-                "Animation '{}' not found in animation map",
-                event.animation_name
-            );
+            if animation_map.name_to_index.is_empty() {
+                debug!(
+                    "Animation '{}' skipped: model has no animations",
+                    event.animation_name
+                );
+            } else {
+                warn!(
+                    "Animation '{}' not found in animation map",
+                    event.animation_name
+                );
+            }
             continue;
         };
 
