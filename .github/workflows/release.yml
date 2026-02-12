@@ -37,6 +37,8 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - uses: dtolnay/rust-toolchain@nightly
+        with:
+          targets: ${{ matrix.target }}
       - uses: taiki-e/install-action@just
       - uses: Swatinem/rust-cache@v2
 
