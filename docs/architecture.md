@@ -225,7 +225,9 @@ pet/
     │   ├── idle.ron
     │   ├── walk.ron
     │   ├── happy.ron
-    │   └── sleep.ron
+    │   ├── sleep.ron
+    │   ├── bounce.ron
+    │   └── spin.ron
     └── pets/                    # 宠物模型存储目录
 ```
 
@@ -285,8 +287,10 @@ enum Action {
     MoveTo(Vec2),                  // 移动到位置
     Scale(f32),                    // 缩放
     SetExpression(String),         // 设置表情
+    Spin(f32),                     // 旋转（圈数）
     Wait(f32),                     // 等待
     Random(Vec<String>),           // 随机选择下一个脚本
+    Bounce(f32),                   // 弹跳（高度）
 }
 ```
 

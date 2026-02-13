@@ -47,10 +47,10 @@ serialization, `AppPaths` for platform-aware directories, error types.
 ### Replay System
 
 Pet behavior uses a replay architecture: `BehaviorScript` defines a sequence
-of `Keyframe`s with timed `Action`s (play animation, move, scale, random
-next script). The theater "replays" scripts rather than computing behavior
-in real time. Built-in scripts: idle, walk, happy, sleep. Scripts are RON
-files stored in `~/.local/share/pet/scripts/`.
+of `Keyframe`s with timed `Action`s (play animation, move, scale, spin,
+bounce, random next script). The theater "replays" scripts rather than
+computing behavior in real time. Built-in scripts: idle, walk, happy, sleep,
+bounce, spin. Scripts are RON files stored in `~/.local/share/pet/scripts/`.
 
 ### Inter-Process Communication
 
