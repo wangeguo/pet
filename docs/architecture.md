@@ -1,102 +1,109 @@
-# Pet - 桌面宠物系统技术设计文档
+# Pet - Desktop Pet System Technical Design Document
 
-## 1. 技术选型
+## 1. Technology Stack
 
-| 领域 | 技术方案 | 选择理由 |
-|------|---------|---------|
-| 宠物剧场 | Bevy | 成熟的 Rust 游戏引擎，原生支持 GLB/glTF，内置 ECS 和动画系统 |
-| 设置中心 | Iced | Rust 原生、声明式 UI，适合表单类配置界面 |
-| 宠物管理器 | 待定 | 未来涉及 3D 预览，技术方案待定 |
-| 系统托盘 | tray-icon | Rust 原生系统托盘支持 |
-| AI 中枢 | rig.rs | Rust 原生 LLM 框架，支持多 provider 和 Tool 调用 |
-| 宠物生成 | Meshy AI | 支持文字生成 3D 模型 |
-| 实时通信 | Unix Domain Socket | 本机进程间低延迟双向通信 |
-| 配置存储 | config crate | 支持多种格式（TOML/YAML/JSON 等） |
-| 模型格式 | GLB | 通用 3D 模型格式，Bevy 原生支持 |
+| Area | Technology | Rationale |
+|------|-----------|-----------|
+| Pet Theater | Bevy | Mature Rust game engine with native GLB/glTF support, built-in ECS and animation system |
+| Settings Center | Iced | Rust-native, declarative UI, ideal for form-based configuration interfaces |
+| Pet Manager | TBD | May involve 3D preview in the future, technical approach pending |
+| System Tray | tray-icon | Rust-native system tray support |
+| AI Brain | rig.rs | Rust-native LLM framework with multi-provider and Tool calling support |
+| Pet Generation | Meshy AI | Supports text-to-3D model generation |
+| Real-time Communication | Unix Domain Socket | Low-latency bidirectional IPC for local processes |
+| Configuration Storage | config crate | Supports multiple formats (TOML/YAML/JSON, etc.) |
+| Model Format | GLB | Universal 3D model format with native Bevy support |
 
-## 2. Replay 架构
+## 2. Replay Architecture
 
-宠物剧场采用类似游戏录像回放的 Replay 架构。宠物的行为
-不是实时计算的，而是预先定义好的行为脚本，剧场进程负责
-"回放"这些行为。
+The Pet Theater uses a Replay architecture similar to game
+replay systems. Pet behaviors are not computed in real-time but
+defined as pre-authored behavior scripts that the theater
+process "replays."
 
-### 2.1 核心概念
+### 2.1 Core Concepts
 
 ```
 ┌──────────────────────────────────────────────────┐
-│                   Replay 架构                     │
+│                Replay Architecture                │
 ├──────────────────────────────────────────────────┤
 │                                                  │
 │  ┌──────────┐    ┌──────────┐    ┌──────────┐   │
-│  │ 行为脚本 │    │ Replayer │    │ 渲染输出 │   │
-│  │ (Script) │ ─► │ (剧场)   │ ─► │ (Screen) │   │
+│  │ Behavior │    │ Replayer │    │ Rendered │   │
+│  │ Script   │ ─► │ (Theater)│ ─► │ Output   │   │
 │  └──────────┘    └──────────┘    └──────────┘   │
 │       │               │                         │
 │       │               ▼                         │
 │       │          ┌──────────┐                   │
-│       │          │ 交互事件 │                   │
-│       │          │ (Input)  │                   │
+│       │          │Interaction│                   │
+│       │          │ Events   │                   │
 │       │          └──────────┘                   │
 │       │               │                         │
 │       │               ▼                         │
 │       │          ┌──────────┐                   │
-│       └────────► │ 触发新   │                   │
-│                  │ 脚本     │                   │
+│       └────────► │ Trigger  │                   │
+│                  │ New Script│                   │
 │                  └──────────┘                   │
 │                                                  │
 └──────────────────────────────────────────────────┘
 ```
 
-### 2.2 类比游戏录像
+### 2.2 Game Replay Analogy
 
-| 游戏录像 | 宠物剧场 |
-|---------|---------|
-| 录像文件 (.w3g/.dem) | 行为脚本 (BehaviorScript) |
-| 游戏引擎 | Bevy 渲染引擎 |
-| 回放器 | theater 进程 |
-| 玩家操作记录 | 状态转换 + 动画序列 |
-| 观看录像 | 宠物在桌面"表演" |
+| Game Replay | Pet Theater |
+|-------------|-------------|
+| Replay file (.w3g/.dem) | Behavior script (BehaviorScript) |
+| Game engine | Bevy rendering engine |
+| Replay player | Theater process |
+| Player action records | State transitions + animation sequences |
+| Watching replay | Pet "performing" on desktop |
 
-### 2.3 回放流程
+### 2.3 Replay Flow
 
 ```
-1. 加载宠物模型和行为脚本库
-2. 进入默认脚本 (idle)
-3. 按时间轴执行关键帧动作
-4. 脚本结束时，根据 next 字段切换脚本
-5. 收到交互事件时，切换到对应脚本
-6. 循环执行
+1. Load pet model and behavior script library
+2. Enter default script (idle)
+3. Execute keyframe actions along the timeline
+4. When script ends, switch based on the `next` field
+5. When interaction events are received, switch to the
+   corresponding script
+6. Loop
 ```
 
-### 2.4 优势
+### 2.4 Advantages
 
-- **确定性**：相同脚本产生相同行为，便于调试
-- **可扩展**：添加新行为只需编写新脚本
-- **低耦合**：行为逻辑与渲染引擎分离
-- **可存档**：脚本可序列化存储和分享
+- **Determinism**: Same script produces same behavior, easy to
+  debug
+- **Extensibility**: Adding new behaviors only requires writing
+  new scripts
+- **Low Coupling**: Behavior logic is separated from the
+  rendering engine
+- **Archivability**: Scripts can be serialized, stored, and
+  shared
 
-### 2.5 AI 驱动的脚本生成
+### 2.5 AI-Driven Script Generation
 
-在 Replay 架构的基础上，引入 AI 中枢（Brain）实现动态
-脚本生成。剧场保持纯粹的回放器角色，脚本来源从"内置"
-扩展为"内置 + AI 动态生成"。
+Building on the Replay architecture, the AI Brain is introduced
+for dynamic script generation. The theater maintains its pure
+replayer role, with script sources expanding from "built-in
+only" to "built-in + AI dynamically generated."
 
 ```
 ┌─────────────────────────────────────────────┐
-│           脚本来源                           │
+│              Script Sources                  │
 ├─────────────────────────────────────────────┤
 │                                             │
 │  ┌────────────┐        ┌────────────┐      │
-│  │ 内置脚本库 │        │  AI 中枢   │      │
-│  │ (builtin)  │        │  (Brain)   │      │
+│  │  Built-in  │        │  AI Brain  │      │
+│  │  Scripts   │        │            │      │
 │  └─────┬──────┘        └─────┬──────┘      │
 │        │                     │              │
-│        │  降级回退    LLM 动态生成          │
+│        │  Fallback    LLM Dynamic Gen       │
 │        │                     │              │
 │        └────────┬────────────┘              │
 │                 ▼                            │
 │         ┌──────────────┐                    │
-│         │ BehaviorScript│                   │
+│         │BehaviorScript│                    │
 │         └──────┬───────┘                    │
 │                ▼                             │
 │         ┌──────────────┐                    │
@@ -107,72 +114,76 @@
 └─────────────────────────────────────────────┘
 ```
 
-**工作流：**
+**Workflow:**
 
-1. Theater 加载 GLB 模型，自动检测所有可用动画
-2. Theater 通过 IPC 将可用动画列表通告 Brain
-3. 用户交互事件（点击等）由 Theater 上报给 Brain
-4. Brain 构建 prompt（系统人格 + 可用动画 + 上下文）
-5. Brain 调用 LLM 生成 BehaviorScript（JSON 格式）
-6. Brain 验证脚本合法性后推送给 Theater
-7. Theater 接收并回放脚本
+1. Theater loads the GLB model and auto-detects all available
+   animations
+2. Theater reports the available animation list to Brain via IPC
+3. User interaction events (clicks, etc.) are reported from
+   Theater to Brain
+4. Brain builds a prompt (system personality + available
+   animations + context)
+5. Brain calls LLM to generate a BehaviorScript (JSON format)
+6. Brain validates the script and pushes it to Theater
+7. Theater receives and replays the script
 
-**降级策略**：当 LLM 不可用（无 API key、网络故障、
-超时）时，Brain 回退到内置脚本库，保证宠物始终可用。
+**Fallback Strategy**: When LLM is unavailable (no API key,
+network failure, timeout), Brain falls back to the built-in
+script library, ensuring the pet is always functional.
 
-## 3. 进程架构
+## 3. Process Architecture
 
-由于 Bevy 和 Iced 各自拥有独立的事件循环，采用多进程
-架构：
+Since Bevy and Iced each have their own independent event loops,
+a multi-process architecture is used:
 
 ```
 ┌───────────────────────────────────────────────────────┐
-│                       主进程                           │
+│                    Main Process                        │
 │  ┌─────────────────────────────────────────────────┐ │
-│  │          进程管理器 + 消息路由器                 │ │
-│  │  - 启动/停止/监控子进程                         │ │
-│  │  - UDS 服务端，中心化消息路由                   │ │
-│  │  - 配置文件变更监听                             │ │
+│  │       Process Manager + Message Router          │ │
+│  │  - Start/stop/monitor child processes           │ │
+│  │  - UDS server, centralized message routing      │ │
+│  │  - Config file change listener                  │ │
 │  └─────────────────────────────────────────────────┘ │
 │      │        │        │        │         │          │
 │  ┌───┴──┐ ┌──┴───┐ ┌──┴──┐ ┌──┴────┐ ┌──┴──────┐  │
 │  │ tray │ │brain │ │thea-│ │mana-  │ │settings │  │
-│  │(托盘)│ │(AI)  │ │ter  │ │ger    │ │(设置)   │  │
-│  │ 常驻 │ │ 常驻 │ │(剧场)│ │(管理器)│ │  Iced   │  │
+│  │      │ │ (AI) │ │ter  │ │ger    │ │  Iced   │  │
+│  │always│ │always│ │     │ │       │ │         │  │
 │  └──────┘ └──────┘ └─────┘ └───────┘ └─────────┘  │
 │      │        │        │        │         │          │
 │      └────────┴────────┴────────┴─────────┘          │
 │                        │                              │
 │              ┌─────────┴─────────┐                    │
 │              │   config.toml     │                    │
-│              │   (持久配置)      │                    │
+│              │ (persistent cfg)  │                    │
 │              └───────────────────┘                    │
 └───────────────────────────────────────────────────────┘
 ```
 
-### 3.1 进程职责
+### 3.1 Process Responsibilities
 
-| 进程 | 技术栈 | 职责 | 生命周期 |
-|------|-------|------|---------|
-| 主进程 | tokio | 进程管理、消息路由 | 常驻 |
-| 托盘进程 | tray-icon | 系统托盘、菜单交互 | 常驻 |
-| AI 中枢 | rig.rs + tokio | LLM 交互、脚本生成 | 常驻 |
-| 剧场进程 | Bevy | 脚本回放、3D 渲染、交互 | 宠物显示时运行 |
-| 管理器进程 | 待定 | 宠物创建/管理/预览 | 按需启动 |
-| 设置进程 | Iced | 配置管理 | 按需启动 |
+| Process | Tech Stack | Responsibility | Lifecycle |
+|---------|-----------|----------------|-----------|
+| Main Process | tokio | Process management, message routing | Resident |
+| Tray Process | tray-icon | System tray, menu interaction | Resident |
+| AI Brain | rig.rs + tokio | LLM interaction, script generation | Resident |
+| Theater Process | Bevy | Script replay, 3D rendering, interaction | Runs when pet is visible |
+| Manager Process | TBD | Pet creation/management/preview | On-demand |
+| Settings Process | Iced | Configuration management | On-demand |
 
-### 3.2 进程间通信
+### 3.2 Inter-Process Communication
 
-采用双层 IPC 策略：
+A two-layer IPC strategy is used:
 
-| 层 | 机制 | 用途 | 延迟 |
-|---|------|------|------|
-| 实时消息层 | Unix Domain Socket | 交互事件、脚本推送、状态同步 | < 1ms |
-| 持久配置层 | config.toml + notify | 配置变更 | 50-500ms |
+| Layer | Mechanism | Purpose | Latency |
+|-------|-----------|---------|---------|
+| Real-time Messaging | Unix Domain Socket | Interaction events, script push, state sync | < 1ms |
+| Persistent Config | config.toml + notify | Configuration changes | 50-500ms |
 
-**实时消息层（UDS）**
+**Real-time Messaging Layer (UDS)**
 
-星型拓扑，主进程作为中心路由：
+Star topology with the main process as the central router:
 
 ```
 tray ──UDS──> app <──UDS── theater
@@ -182,17 +193,17 @@ tray ──UDS──> app <──UDS── theater
         manager  settings
 ```
 
-每个子进程启动后连接到主进程的 UDS 服务端，注册自己的
-`ProcessId`。主进程负责消息路由：将 theater 发来的
-`PetClicked` 转发给 brain，将 brain 发来的
-`ExecuteScript` 转发给 theater。
+Each child process connects to the main process's UDS server
+upon startup and registers its `ProcessId`. The main process
+handles message routing: forwarding `PetClicked` from theater
+to brain, and `ExecuteScript` from brain to theater.
 
-UDS 路径：`{config_dir}/pet.sock`
+UDS path: `{config_dir}/pet.sock`
 
-**消息协议**（定义在 `common` crate）：
+**Message Protocol** (defined in `common` crate):
 
 ```rust
-/// 进程间消息信封
+/// IPC message envelope
 #[derive(Serialize, Deserialize)]
 pub struct IpcEnvelope {
     pub source: ProcessId,
@@ -220,7 +231,7 @@ pub enum IpcMessage {
     // Tray/Manager -> Brain
     UserTextInput { text: String },
 
-    // 通用
+    // General
     ProcessReady,
     Shutdown,
     Ping,
@@ -228,49 +239,51 @@ pub enum IpcMessage {
 }
 ```
 
-**持久配置层**
+**Persistent Config Layer**
 
-保留现有的 `config.toml` + `notify` 机制，用于低频
-配置变更（宠物列表、API Key、设置项等）。
+Retains the existing `config.toml` + `notify` mechanism for
+low-frequency configuration changes (pet list, API Key, settings
+items, etc.).
 
-### 3.3 启动流程
+### 3.3 Startup Flow
 
 ```
-app (主进程)
+app (main process)
 |
-+-- 1. 读取配置
-+-- 2. 启动 UDS 服务端
-+-- 3. 启动常驻进程
++-- 1. Read configuration
++-- 2. Start UDS server
++-- 3. Start resident processes
 |      ├── spawn: tray
 |      └── spawn: brain
-+-- 4. 如有活跃宠物，启动剧场
++-- 4. If there is an active pet, start theater
 |      └── spawn: theater --pet-id=<uuid>
-+-- 5. 首次运行时，启动管理器
++-- 5. On first run, start manager
 |      └── spawn: manager
-+-- 6. 进入事件循环
-       - 监控子进程状态
-       - 路由 IPC 消息
-       - 监听配置文件变更
++-- 6. Enter event loop
+       - Monitor child process status
+       - Route IPC messages
+       - Listen for config file changes
 ```
 
-### 3.4 进程通信示例
+### 3.4 Process Communication Examples
 
 ```
-用户点击宠物（AI 驱动模式）：
+User clicks pet (AI-Driven Mode):
   theater -> UDS -> app -> UDS -> brain
-  brain 调用 LLM，生成脚本
+  brain calls LLM, generates script
   brain -> UDS -> app -> UDS -> theater
-  theater 回放脚本
+  theater replays script
 
-用户在管理器切换宠物：
-  manager -> 写入 config.toml ->
-  app 检测变化 -> 重启 theater（brain 常驻不重启）
+User switches pet in manager:
+  manager -> writes config.toml ->
+  app detects change -> restarts theater
+  (brain stays resident)
 ```
 
-## 4. 项目结构
+## 4. Project Structure
 
-采用 Cargo workspace 组织 7 个 crate（app, common, tray,
-theater, brain, manager, settings）：
+Organized as a Cargo workspace with 7 crates (app, common, tray,
+theater, brain, manager, settings):
 
 ```
 pet/
@@ -280,30 +293,30 @@ pet/
 │   ├── architecture.md
 │   └── roadmap.md
 ├── crates/
-│   ├── app/                     # 主进程
+│   ├── app/                     # Main process
 │   │   ├── Cargo.toml
 │   │   └── src/
-│   │       ├── main.rs          # 入口
-│   │       ├── process.rs       # 子进程管理
-│   │       └── router.rs        # IPC 消息路由
+│   │       ├── main.rs          # Entry point
+│   │       ├── process.rs       # Child process management
+│   │       └── router.rs        # IPC message routing
 │   │
-│   ├── tray/                    # 托盘进程
+│   ├── tray/                    # Tray process
 │   │   ├── Cargo.toml
 │   │   └── src/
 │   │       ├── main.rs
 │   │       └── menu.rs
 │   │
-│   ├── theater/                 # 剧场进程 (Bevy)
+│   ├── theater/                 # Theater process (Bevy)
 │   │   ├── Cargo.toml
 │   │   └── src/
 │   │       ├── main.rs
 │   │       ├── app.rs
 │   │       ├── plugins/
 │   │       │   ├── mod.rs
-│   │       │   ├── pet.rs       # 模型加载、渲染
-│   │       │   ├── replay.rs    # 脚本回放
-│   │       │   ├── interaction.rs # 拖拽、点击
-│   │       │   └── ipc.rs       # IPC 收发
+│   │       │   ├── pet.rs       # Model loading, rendering
+│   │       │   ├── replay.rs    # Script replay
+│   │       │   ├── interaction.rs # Drag, click
+│   │       │   └── ipc.rs       # IPC send/receive
 │   │       ├── components.rs
 │   │       ├── resources.rs
 │   │       ├── events.rs
@@ -317,65 +330,65 @@ pet/
 │   │           ├── rotation.rs
 │   │           └── script_transition.rs
 │   │
-│   ├── brain/                   # AI 中枢进程
+│   ├── brain/                   # AI Brain process
 │   │   ├── Cargo.toml
 │   │   └── src/
-│   │       ├── main.rs          # 入口、UDS 连接
-│   │       ├── agent.rs         # rig.rs Agent 配置
+│   │       ├── main.rs          # Entry, UDS connection
+│   │       ├── agent.rs         # rig.rs Agent config
 │   │       ├── script_gen.rs    # LLM -> BehaviorScript
-│   │       ├── personality.rs   # 宠物人格管理
-│   │       ├── context.rs       # 上下文管理
-│   │       ├── handlers.rs      # IPC 消息处理
-│   │       └── tools/           # rig.rs Tool 实现
+│   │       ├── personality.rs   # Pet personality management
+│   │       ├── context.rs       # Context management
+│   │       ├── handlers.rs      # IPC message handlers
+│   │       └── tools/           # rig.rs Tool implementations
 │   │           ├── mod.rs
-│   │           ├── animation.rs # 查询可用动画
-│   │           └── script.rs    # 生成脚本
+│   │           ├── animation.rs # Query available animations
+│   │           └── script.rs    # Generate scripts
 │   │
-│   ├── manager/                 # 管理器进程（技术方案待定）
+│   ├── manager/                 # Manager process (TBD)
 │   │   ├── Cargo.toml
 │   │   └── src/
 │   │       └── main.rs
 │   │
-│   ├── settings/                # 设置进程 (Iced)
+│   ├── settings/                # Settings process (Iced)
 │   │   ├── Cargo.toml
 │   │   └── src/
 │   │       ├── main.rs
 │   │       ├── app.rs
 │   │       └── views/
 │   │           ├── mod.rs
-│   │           ├── general.rs   # General 分区
-│   │           ├── appearance.rs # Appearance 分区
-│   │           ├── ai.rs        # AI 分区
-│   │           ├── meshy.rs     # Meshy AI 分区
-│   │           └── about.rs     # About 分区
+│   │           ├── general.rs   # General section
+│   │           ├── appearance.rs # Appearance section
+│   │           ├── ai.rs        # AI section
+│   │           ├── meshy.rs     # Meshy AI section
+│   │           └── about.rs     # About section
 │   │
-│   └── common/                  # 共享库
+│   └── common/                  # Shared library
 │       ├── Cargo.toml
 │       └── src/
 │           ├── lib.rs
-│           ├── models.rs        # 数据模型
-│           ├── config.rs        # 配置读写
-│           ├── script.rs        # 行为脚本定义
-│           ├── ipc.rs           # IPC 消息类型
-│           ├── paths.rs         # 路径管理
-│           ├── autostart.rs     # 开机自启
-│           ├── error.rs         # 错误类型
-│           └── storage.rs       # 存储服务
+│           ├── models.rs        # Data models
+│           ├── config.rs        # Config read/write
+│           ├── script.rs        # Behavior script definitions
+│           ├── ipc.rs           # IPC message types
+│           ├── paths.rs         # Path management
+│           ├── autostart.rs     # Auto-start on boot
+│           ├── error.rs         # Error types
+│           └── storage.rs       # Storage service
 │
 └── assets/
-    ├── scripts/                 # 内置行为脚本
+    ├── scripts/                 # Built-in behavior scripts
     │   ├── idle.ron
     │   ├── walk.ron
     │   ├── happy.ron
     │   ├── sleep.ron
     │   ├── bounce.ron
     │   └── spin.ron
-    └── pets/                    # 宠物模型
+    └── pets/                    # Pet models
 ```
 
-## 5. 数据模型
+## 5. Data Models
 
-### 5.1 宠物数据
+### 5.1 Pet Data
 
 ```rust
 #[derive(Serialize, Deserialize)]
@@ -388,9 +401,10 @@ struct Pet {
 }
 ```
 
-### 5.2 配置数据
+### 5.2 Configuration Data
 
-配置采用分组结构，便于 Settings 界面按分区管理：
+Configuration uses a grouped structure for easy section-based
+management in the Settings interface:
 
 ```rust
 #[derive(Serialize, Deserialize)]
@@ -427,7 +441,7 @@ struct AiSettings {
     provider: AiProvider,
     api_key: Option<String>,
     model: String,
-    endpoint: Option<String>,   // 自定义端点
+    endpoint: Option<String>,   // Custom endpoint
     personality: PersonalityConfig,
     temperature: f32,
 }
@@ -442,7 +456,7 @@ enum AiProvider {
 
 #[derive(Serialize, Deserialize)]
 struct PersonalityConfig {
-    name: String,               // 宠物名字
+    name: String,               // Pet name
     traits: Vec<String>,        // ["cheerful", "curious"]
     custom_prompt: Option<String>,
 }
@@ -453,10 +467,10 @@ struct MeshySettings {
 }
 ```
 
-### 5.3 行为脚本
+### 5.3 Behavior Script
 
 ```rust
-/// 行为脚本 - 定义宠物的一段完整行为
+/// Behavior script - defines a complete behavior sequence
 #[derive(Serialize, Deserialize)]
 struct BehaviorScript {
     id: String,
@@ -466,14 +480,14 @@ struct BehaviorScript {
     interruptible: bool,
 }
 
-/// 关键帧 - 某一时刻的状态
+/// Keyframe - state at a specific moment
 #[derive(Serialize, Deserialize)]
 struct Keyframe {
     time: f32,
     action: Action,
 }
 
-/// 动作类型
+/// Action types
 #[derive(Serialize, Deserialize)]
 enum Action {
     PlayAnimation(String),
@@ -487,7 +501,7 @@ enum Action {
 }
 ```
 
-### 5.4 Bevy 组件
+### 5.4 Bevy Components
 
 ```rust
 #[derive(Component)]
@@ -507,31 +521,32 @@ struct Draggable {
 }
 ```
 
-### 5.5 存储位置
+### 5.5 Storage Locations
 
-| 数据类型 | 存储位置 |
-|---------|---------|
-| 配置文件 | `~/.config/pet/config.toml` |
-| 运行状态 | `~/.config/pet/state.toml` |
-| UDS 套接字 | `~/.config/pet/pet.sock` |
-| 宠物模型 | `~/.local/share/pet/models/` |
-| 行为脚本 | `~/.local/share/pet/scripts/` |
-| 日志文件 | `~/.local/share/pet/logs/` |
+| Data Type | Storage Location |
+|-----------|-----------------|
+| Config file | `~/.config/pet/config.toml` |
+| Runtime state | `~/.config/pet/state.toml` |
+| UDS socket | `~/.config/pet/pet.sock` |
+| Pet models | `~/.local/share/pet/models/` |
+| Behavior scripts | `~/.local/share/pet/scripts/` |
+| Log files | `~/.local/share/pet/logs/` |
 
-## 6. Brain 架构设计
+## 6. Brain Architecture Design
 
-### 6.1 核心职责
+### 6.1 Core Responsibilities
 
-Brain 作为 AI 中枢，负责将用户交互转化为宠物行为：
+The Brain serves as the AI hub, transforming user interactions
+into pet behaviors:
 
 ```
-交互事件 → prompt 构建 → LLM 调用 →
-脚本解析验证 → 推送 theater
+Interaction Event → Prompt Construction → LLM Call →
+Script Parsing & Validation → Push to Theater
 ```
 
-### 6.2 rig.rs 集成
+### 6.2 rig.rs Integration
 
-使用 rig.rs 构建 LLM Agent，支持多 provider：
+Uses rig.rs to build an LLM Agent with multi-provider support:
 
 ```rust
 pub struct PetBrain {
@@ -556,71 +571,78 @@ impl PetBrain {
 }
 ```
 
-### 6.3 上下文管理
+### 6.3 Context Management
 
-`PetContext` 维护 Brain 决策所需的全部上下文：
+`PetContext` maintains all context needed for Brain
+decision-making:
 
-- 宠物模型支持的动画列表（从 Theater 获取）
-- 可用的 Action 类型列表
-- 最近交互历史
-- 宠物当前状态（正在执行的脚本等）
-- 宠物性格配置
+- Animation list supported by the pet model (obtained from
+  Theater)
+- Available Action type list
+- Recent interaction history
+- Current pet state (currently executing script, etc.)
+- Pet personality configuration
 
-### 6.4 LLM 延迟处理
+### 6.4 LLM Latency Handling
 
-LLM 调用通常需要 1-3 秒，等待期间：
+LLM calls typically take 1-3 seconds. During the wait:
 
-1. Brain 立即发送 `AiThinking { is_thinking: true }`
-2. Theater 播放"思考中"过渡动画
-3. LLM 响应到达后发送脚本，无缝切换
+1. Brain immediately sends
+   `AiThinking { is_thinking: true }`
+2. Theater plays a "thinking" transition animation
+3. When LLM response arrives, the script is sent and seamlessly
+   transitioned
 
-### 6.5 降级策略
+### 6.5 Fallback Strategy
 
-AI 不可用（无 API key / 网络故障 / 超时）时：
+When AI is unavailable (no API key / network failure / timeout):
 
-1. Brain 回退到内置脚本映射（如点击 → happy 脚本）
-2. 行为与 AI 关闭时完全一致，用户无感知
-3. 恢复后自动切换回 AI 模式
+1. Brain falls back to built-in script mapping (e.g., click →
+   happy script)
+2. Behavior is identical to when AI is disabled — transparent to
+   the user
+3. Automatically switches back to AI mode when restored
 
-## 7. Meshy AI 集成
+## 7. Meshy AI Integration
 
-### 7.1 工作流程
+### 7.1 Workflow
 
 ```
 ┌─────────┐  ┌─────────┐  ┌──────────┐  ┌──────────┐
-│ 提交任务│ ►│ 获取 ID │ ►│ 轮询状态 │ ►│ 下载模型 │
+│ Submit  │ ►│ Get ID  │ ►│  Poll    │ ►│ Download │
+│ Task    │  │         │  │  Status  │  │  Model   │
 └─────────┘  └─────────┘  └──────────┘  └──────────┘
      │            │             │             │
      ▼            ▼             ▼             ▼
-  POST /v2/   返回        GET /v2/      GET model_url
-  text-to-3d  task_id     text-to-3d/    下载 GLB
-                          {task_id}
+  POST /v2/   Returns      GET /v2/      GET model_url
+  text-to-3d  task_id      text-to-3d/   Download GLB
+                           {task_id}
 ```
 
-### 7.2 API 调用
+### 7.2 API Calls
 
-**创建任务：**
+**Create Task:**
 ```
 POST https://api.meshy.ai/v2/text-to-3d
 {
     "mode": "preview",
-    "prompt": "用户输入的描述",
+    "prompt": "user-provided description",
     "art_style": "realistic"
 }
 ```
 
-**查询状态：**
+**Query Status:**
 ```
 GET https://api.meshy.ai/v2/text-to-3d/{task_id}
 ```
 
-**状态值：**
-- `PENDING` - 等待处理
-- `IN_PROGRESS` - 处理中
-- `SUCCEEDED` - 完成
-- `FAILED` - 失败
+**Status Values:**
+- `PENDING` - Waiting to be processed
+- `IN_PROGRESS` - Processing
+- `SUCCEEDED` - Completed
+- `FAILED` - Failed
 
-## 8. 依赖清单
+## 8. Dependency List
 
 ```toml
 # Cargo.toml (workspace)
@@ -666,13 +688,13 @@ tracing.workspace = true
 common = { path = "../common" }
 iced = { version = "0.14", features = ["tokio"] }
 
-# crates/manager (技术方案待定)
+# crates/manager (technical approach TBD)
 [dependencies]
 common = { path = "../common" }
 reqwest = { version = "0.12", features = ["json"] }
 ```
 
-## 9. 行为脚本示例
+## 9. Behavior Script Examples
 
 ```ron
 // assets/scripts/idle.ron
@@ -714,11 +736,11 @@ BehaviorScript(
 )
 ```
 
-## 10. 参考资料
+## 10. References
 
-- [Bevy 引擎文档](https://bevyengine.org/learn/)
+- [Bevy Engine Documentation](https://bevyengine.org/learn/)
 - [Bevy Cheat Book](https://bevy-cheatbook.github.io/)
-- [Iced 框架文档](https://docs.rs/iced)
-- [rig.rs 文档](https://docs.rig.rs/)
-- [Meshy AI API 文档](https://docs.meshy.ai)
-- [tray-icon 文档](https://docs.rs/tray-icon)
+- [Iced Framework Documentation](https://docs.rs/iced)
+- [rig.rs Documentation](https://docs.rig.rs/)
+- [Meshy AI API Documentation](https://docs.meshy.ai)
+- [tray-icon Documentation](https://docs.rs/tray-icon)

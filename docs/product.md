@@ -1,372 +1,291 @@
-# Pet - 桌面宠物系统产品设计文档
+# Pet - Desktop Pet System Product Design Document
 
-## 1. 产品概述
+## 1. Product Overview
 
-### 1.1 产品定位
+### 1.1 Product Positioning
 
-Pet 是一款 AI 驱动的智能桌面伴侣，用户可以通过 AI 生成
-个性化的 3D 宠物模型，宠物以悬浮窗形式常驻桌面。内置 AI
-中枢理解用户交互意图，动态生成宠物行为，提供有温度的智能
-陪伴体验。
+Pet is an AI-driven intelligent desktop companion. Users can
+generate personalized 3D pet models through AI, and pets reside
+on the desktop as floating windows. The built-in AI Brain
+understands user interaction intent and dynamically generates pet
+behaviors, delivering a warm and intelligent companionship
+experience.
 
-### 1.2 核心价值
+### 1.2 Core Values
 
-- **陪伴感**：宠物常驻桌面，提供持续的情感陪伴
-- **个性化**：通过 Meshy AI 生成独一无二的宠物形象
-- **交互性**：支持拖拽、点击等交互方式
-- **智能性**：通过 LLM 理解用户意图，动态生成行为响应
+- **Companionship**: Pets reside on the desktop, providing
+  continuous emotional companionship
+- **Personalization**: Generate unique pet appearances through
+  Meshy AI
+- **Interactivity**: Supports drag, click, and other interaction
+  methods
+- **Intelligence**: Understands user intent through LLM and
+  dynamically generates behavioral responses
 
-### 1.3 目标用户
+### 1.3 Target Users
 
-- 希望桌面有个性化装饰的用户
-- 喜欢虚拟宠物的用户
-- 对 AI 生成内容感兴趣的用户
+- Users who want personalized desktop decoration
+- Users who enjoy virtual pets
+- Users interested in AI-generated content
 
-## 2. 功能设计
+## 2. Feature Design
 
-### 2.1 功能架构
+### 2.1 Feature Architecture
 
 ```
 ┌──────────────────────────────────────────────────────┐
-│                   Pet 智能桌面伴侣                    │
+│               Pet Intelligent Desktop Companion       │
 ├──────────────────────────────────────────────────────┤
 │                                                      │
 │  ┌──────────────────────────────────────────────┐   │
-│  │              宠物剧场 (核心体验)              │   │
+│  │          Pet Theater (Core Experience)        │   │
 │  ├──────────────────────────────────────────────┤   │
-│  │  3D 模型渲染  行为脚本回放  拖拽交互         │   │
-│  │  动画效果     悬浮窗显示    置顶显示         │   │
+│  │  3D Rendering   Behavior Replay   Drag       │   │
+│  │  Animations     Floating Window   Always Top │   │
 │  └──────────────────────────────────────────────┘   │
 │                     ▲          ▲                     │
-│          脚本推送   │          │  交互事件上报       │
+│       Script Push   │          │  Interaction Events │
 │                     │          │                     │
 │  ┌──────────────────┴──────────┴─────────────┐      │
-│  │           AI 中枢 (Brain, 常驻)            │      │
+│  │          AI Brain (Resident Process)       │      │
 │  ├────────────────────────────────────────────┤      │
-│  │  LLM 交互     动态脚本生成   上下文管理    │      │
-│  │  性格系统     工具/Agent      降级回退     │      │
+│  │  LLM Interaction   Dynamic Script Gen     │      │
+│  │  Personality System  Tools/Agent           │      │
+│  │  Context Management  Fallback             │      │
 │  └────────────────────────────────────────────┘      │
 │                                                      │
 │  ┌─────────────┐ ┌────────────┐ ┌────────────┐     │
-│  │  系统托盘   │ │ 宠物管理器 │ │  设置中心  │     │
+│  │ System Tray │ │ Pet Manager│ │  Settings  │     │
 │  ├─────────────┤ ├────────────┤ ├────────────┤     │
-│  │ 打开管理器  │ │ 创建宠物   │ │ General    │     │
-│  │ 打开设置    │ │ 宠物列表   │ │ Appearance │     │
-│  │ 显示/隐藏   │ │ 模型预览   │ │ AI         │     │
-│  │ 退出程序    │ │ Skills配置 │ │ Meshy AI   │     │
+│  │ Open Manager│ │ Create Pet │ │ General    │     │
+│  │ Open Settings│ │ Pet List  │ │ Appearance │     │
+│  │ Show/Hide  │ │ Model View │ │ AI         │     │
+│  │ Quit       │ │ Skills Cfg │ │ Meshy AI   │     │
 │  └─────────────┘ └────────────┘ └────────────┘     │
 │                                                      │
 │  ┌──────────────────────────────────────────────┐   │
-│  │            未来扩展 (Future)                  │   │
-│  │  语音交互   屏幕感知   外部系统集成           │   │
-│  │  宠物系统   宠物商城                         │   │
+│  │              Future Extensions                │   │
+│  │  Voice Interaction  Screen Awareness          │   │
+│  │  External Integration  Pet Ecosystem          │   │
+│  │  Pet Marketplace                              │   │
 │  └──────────────────────────────────────────────┘   │
 │                                                      │
 └──────────────────────────────────────────────────────┘
 ```
 
-### 2.2 核心功能
+### 2.2 Core Features
 
-#### 2.2.1 宠物剧场（主体功能）
+#### 2.2.1 Pet Theater (Primary Feature)
 
-宠物剧场是用户日常看到和交互的主要界面，采用 Replay
-架构回放宠物行为。剧场本身是纯粹的脚本播放器，所有行为
-脚本来自 AI 中枢的动态生成或内置脚本库。
+The Pet Theater is the main interface that users see and interact
+with daily. It uses a Replay architecture to play back pet
+behaviors. The theater itself is a pure script player — all
+behavior scripts come from AI Brain dynamic generation or the
+built-in script library.
 
-| 功能项 | 描述 |
-|-------|------|
-| 悬浮窗显示 | 无边框透明窗口，默认显示在桌面右下角 |
-| 3D 渲染 | 渲染 GLB 格式的 3D 模型 |
-| 行为回放 | 接收并回放行为脚本 |
-| 动画自动识别 | 自动检测模型内置动画并通告 AI 中枢 |
-| 拖拽移动 | 支持鼠标拖拽移动到任意位置 |
-| 置顶显示 | 始终显示在其他窗口之上 |
-| 交互事件 | 点击等交互事件上报给 AI 中枢处理 |
+| Feature | Description |
+|---------|-------------|
+| Floating Window | Borderless transparent window, displayed at the bottom-right of the desktop by default |
+| 3D Rendering | Renders GLB format 3D models |
+| Behavior Replay | Receives and replays behavior scripts |
+| Auto Animation Detection | Automatically detects built-in model animations and reports to AI Brain |
+| Drag to Move | Supports mouse drag to move to any position |
+| Always on Top | Always displayed above other windows |
+| Interaction Events | Click and other interaction events are reported to AI Brain for processing |
 
-#### 2.2.2 系统托盘
+#### 2.2.2 System Tray
 
-系统托盘提供快捷入口，常驻后台运行。
+The system tray provides quick access and runs persistently in
+the background.
 
-| 功能项 | 描述 |
-|-------|------|
-| 托盘图标 | 显示应用图标，表示程序运行中 |
-| 打开管理器 | 打开宠物管理界面 |
-| 打开设置 | 打开设置中心 |
-| 显示/隐藏宠物 | 快速切换宠物显示状态 |
-| 退出程序 | 完全退出应用 |
+| Feature | Description |
+|---------|-------------|
+| Tray Icon | Displays the app icon, indicating the program is running |
+| Open Manager | Opens the pet management interface |
+| Open Settings | Opens the settings center |
+| Show/Hide Pet | Quickly toggles pet visibility |
+| Quit | Completely exits the application |
 
-#### 2.2.3 宠物管理器
+#### 2.2.3 Pet Manager
 
-管理器是独立进程，通过托盘菜单按需打开。未来可能涉及
-3D 模型预览等重渲染场景，技术方案待定（Bevy / Web /
-其他），与设置中心解耦以独立演进。
+The manager is a separate process, opened on demand via the tray
+menu. It may involve heavy rendering scenarios like 3D model
+previews in the future — the technical approach is TBD
+(Bevy / Web / other). It is decoupled from the settings center
+to evolve independently.
 
-| 功能项 | 描述 |
-|-------|------|
-| 创建宠物 | 输入描述，通过 Meshy AI 生成 3D 模型 |
-| 宠物列表 | 展示已创建的所有宠物 |
-| 模型预览 | 预览宠物 3D 模型 |
-| 切换宠物 | 选择要显示的宠物 |
-| 删除宠物 | 删除宠物及其模型文件 |
-| 宠物命名 | 为宠物设置/修改名称 |
+| Feature | Description |
+|---------|-------------|
+| Create Pet | Enter a description, generate a 3D model via Meshy AI |
+| Pet List | Display all created pets |
+| Model Preview | Preview pet 3D models |
+| Switch Pet | Select which pet to display |
+| Delete Pet | Delete a pet and its model files |
+| Pet Naming | Set/modify a pet's name |
 
-**未来扩展方向：**
+**Future Expansion:**
 
-- 宠物 Skills 配置（行为能力定制）
-- 宠物外观/变种管理
-- 宠物系统（英雄联盟、魔兽争霸、乌萨奇、奥特曼...）
-- 从官方列表选择或自行创建
+- Pet Skills configuration (behavior capability customization)
+- Pet appearance/variant management
+- Pet ecosystems (League of Legends, Warcraft, Usagi,
+  Ultraman...)
+- Select from official lists or create custom ones
 
-**宠物创建流程：**
+**Pet Creation Flow:**
 
 ```
-托盘菜单 → 打开管理器 → 输入描述 →
-提交生成 → 等待处理 → 预览确认 → 保存并显示
+Tray Menu → Open Manager → Enter Description →
+Submit Generation → Wait for Processing →
+Preview & Confirm → Save and Display
 ```
 
-#### 2.2.4 宠物行为系统
+#### 2.2.4 Pet Behavior System
 
-行为系统采用 Replay 架构，支持两种驱动模式：
+The behavior system uses a Replay architecture with two driving
+modes:
 
-**AI 驱动模式**（默认，需配置 LLM）：
+**AI-Driven Mode** (default, requires LLM configuration):
 
-交互事件发送给 AI 中枢，由 LLM 理解意图后动态生成行为
-脚本。AI 中枢感知宠物模型支持的动画列表，生成的脚本能
-充分利用模型的动画能力。
+Interaction events are sent to the AI Brain, which understands
+intent through LLM and dynamically generates behavior scripts.
+The AI Brain is aware of the animation list supported by the pet
+model and generates scripts that fully leverage the model's
+animation capabilities.
 
-**回退模式**（AI 不可用时）：
+**Fallback Mode** (when AI is unavailable):
 
-使用内置行为脚本，保证宠物在无 AI 配置时仍能正常运行。
+Uses built-in behavior scripts, ensuring pets function normally
+without AI configuration.
 
-| 状态 | 描述 | 触发条件 |
-|------|------|---------|
-| Idle | 待机状态，轻微呼吸动画 | 默认状态 |
-| Walking | 行走状态，左右移动 | 随机触发 |
-| Happy | 开心状态，跳跃动画 | 用户点击 |
-| Sleeping | 睡眠状态，闭眼静止 | 长时间无交互 |
-| Bounce | 弹跳状态，上下弹跳 | 随机触发 |
-| Spin | 旋转状态，原地旋转 | 随机触发 |
+| State | Description | Trigger |
+|-------|-------------|---------|
+| Idle | Standby state, subtle breathing animation | Default state |
+| Walking | Walking state, moves left and right | Random trigger |
+| Happy | Happy state, jumping animation | User click |
+| Sleeping | Sleep state, eyes closed, still | Long period of no interaction |
+| Bounce | Bounce state, bouncing up and down | Random trigger |
+| Spin | Spin state, rotating in place | Random trigger |
 
-**状态转换图（回退模式）：**
+**State Transition Diagram (Fallback Mode):**
 
 ```
         ┌──────────────────────────────┐
         │                              │
         ▼                              │
-    ┌───────┐   随机    ┌─────────┐   │
-    │ Idle  │ ───────► │ Walking │ ──┘
-    └───────┘          └─────────┘
+    ┌───────┐  Random   ┌─────────┐   │
+    │ Idle  │ ────────► │ Walking │ ──┘
+    └───────┘           └─────────┘
         │ │ \
-   点击 │ │  └── 随机 ──► ┌────────┐ ──► Idle
-        │ │               │ Bounce │
-        │ │               └────────┘
-        │ └── 随机 ──► ┌──────┐ ──► Idle
-        │              │ Spin │
-        │              └──────┘
+  Click │ │  └── Random ──► ┌────────┐ ──► Idle
+        │ │                 │ Bounce │
+        │ │                 └────────┘
+        │ └── Random ──► ┌──────┐ ──► Idle
+        │                │ Spin │
+        │                └──────┘
         ▼
-    ┌───────┐          ┌───────┐
-    │ Happy │ ───────► │ Idle  │
-    └───────┘  完成    └───────┘
+    ┌───────┐            ┌───────┐
+    │ Happy │ ─────────► │ Idle  │
+    └───────┘  Done      └───────┘
 
-    长时间无交互
+    Long period of no interaction
         │
         ▼
-    ┌──────────┐  任意交互  ┌──────┐
-    │ Sleeping │ ─────────►│ Idle │
-    └──────────┘           └──────┘
+    ┌──────────┐  Any interaction  ┌──────┐
+    │ Sleeping │ ────────────────►│ Idle │
+    └──────────┘                  └──────┘
 ```
 
-在 AI 驱动模式下，状态转换由 LLM 决策，不受上述固定
-规则约束，可以产生更丰富、更有创意的行为组合。
+In AI-Driven Mode, state transitions are decided by the LLM,
+unrestricted by the fixed rules above, enabling richer and more
+creative behavior combinations.
 
-#### 2.2.5 AI 中枢（Brain）
+#### 2.2.5 AI Brain
 
-AI 中枢是系统的"大脑"，负责理解用户意图并控制宠物
-行为。
+The AI Brain is the system's "brain", responsible for
+understanding user intent and controlling pet behavior.
 
-| 功能项 | 描述 |
-|-------|------|
-| 交互理解 | 接收来自剧场的交互事件，理解用户意图 |
-| 动态脚本生成 | 调用 LLM 动态生成行为脚本 |
-| 性格系统 | 基于配置的宠物性格生成差异化响应 |
-| 上下文管理 | 维护交互历史和宠物状态上下文 |
-| 降级回退 | AI 不可用时自动切换为内置脚本 |
+| Feature | Description |
+|---------|-------------|
+| Interaction Understanding | Receives interaction events from the theater and understands user intent |
+| Dynamic Script Generation | Calls LLM to dynamically generate behavior scripts |
+| Personality System | Generates differentiated responses based on configured pet personality |
+| Context Management | Maintains interaction history and pet state context |
+| Fallback | Automatically switches to built-in scripts when AI is unavailable |
 
-**AI 驱动流程：**
+**AI-Driven Flow:**
 
 ```
-用户交互 → 剧场上报事件 → AI 中枢接收 →
-构建 prompt → 调用 LLM → 生成行为脚本 →
-推送给剧场 → 回放宠物动作
+User Interaction → Theater Reports Event → AI Brain Receives →
+Build Prompt → Call LLM → Generate Behavior Script →
+Push to Theater → Replay Pet Action
 ```
 
-**LLM 等待期间**，剧场播放"思考中"过渡动画，响应到达
-后无缝切换。
+**During LLM wait time**, the theater plays a "thinking"
+transition animation and seamlessly switches when the response
+arrives.
 
-#### 2.2.6 设置中心
+#### 2.2.6 Settings Center
 
-设置中心是独立进程（Iced），通过托盘菜单按需打开。
-纯表单 UI，与管理器分离以保持轻量。
+The settings center is a separate process (Iced), opened on
+demand via the tray menu. It is a pure form UI, separated from
+the manager to stay lightweight.
 
-| 分区 | 配置项 |
-|------|-------|
-| General | 开机自启、语言、更新检查 |
-| Appearance | 宠物缩放、默认位置、窗口大小、置顶、透明度 |
-| AI | LLM 提供商、API Key、模型、端点、性格配置 |
+| Section | Configuration Items |
+|---------|-------------------|
+| General | Auto-start on boot, language, update checking |
+| Appearance | Pet scale, default position, window size, always on top, opacity |
+| AI | LLM provider, API Key, model, endpoint, personality configuration |
 | Meshy AI | Meshy API Key |
-| About | 版本号、构建信息、项目链接 |
+| About | Version number, build info, project link |
 
-#### 2.2.7 语音交互（Future）
+#### 2.2.7 Voice Interaction (Future)
 
-未来支持语音输入输出，实现更自然的交互方式。
+Future support for voice input/output for more natural
+interaction.
 
-| 功能项 | 描述 |
-|-------|------|
-| 语音输入 | 通过麦克风捕获用户语音，转写后发送给 AI 中枢 |
-| 语音响应 | AI 中枢的文本回复通过 TTS 合成语音播放 |
-| 音效系统 | 宠物行为伴随音效（如鸭子"嘎嘎"叫） |
-| 唤醒词 | 通过唤醒词激活语音交互 |
+| Feature | Description |
+|---------|-------------|
+| Voice Input | Capture user voice via microphone, transcribe and send to AI Brain |
+| Voice Response | AI Brain's text replies are synthesized as audio via TTS |
+| Sound Effects | Pet behaviors accompanied by sound effects (e.g., duck "quack") |
+| Wake Word | Activate voice interaction via wake word |
 
-## 3. 用户体验流程
+## 3. User Experience Flows
 
-### 3.1 首次使用
-
-```
-启动应用 → 显示托盘图标 → 自动打开管理器 →
-引导创建第一个宠物 → 宠物显示在桌面
-```
-
-### 3.2 日常使用
+### 3.1 First-Time Use
 
 ```
-开机自启 → 托盘图标常驻 → 宠物自动显示在桌面 →
-用户与宠物交互 → AI 中枢生成响应 → 宠物做出反应
+Launch App → Display Tray Icon → Auto-Open Manager →
+Guide User to Create First Pet → Pet Appears on Desktop
+```
+
+### 3.2 Daily Use
+
+```
+Auto-Start on Boot → Tray Icon Persists →
+Pet Automatically Appears on Desktop →
+User Interacts with Pet → AI Brain Generates Response →
+Pet Reacts
         │
-        └─ 需要管理时：托盘菜单 → 打开管理器
+        └─ When management needed:
+           Tray Menu → Open Manager
 ```
 
-### 3.3 典型场景
+### 3.3 Typical Scenarios
 
-| 场景 | 用户操作 |
-|------|---------|
-| 日常陪伴 | 宠物在桌面自动运行，偶尔点击互动 |
-| AI 互动 | 点击宠物 → AI 思考 → 宠物做出智能反应 |
-| 创建新宠物 | 托盘 → 管理器 → 创建 |
-| 切换宠物 | 托盘 → 管理器 → 选择其他宠物 |
-| 暂时隐藏 | 托盘 → 隐藏宠物 |
-| 移动位置 | 直接拖拽宠物悬浮窗 |
-| 修改设置 | 托盘 → 设置中心 |
+| Scenario | User Action |
+|----------|-------------|
+| Daily Companionship | Pet runs on desktop automatically, occasional click interactions |
+| AI Interaction | Click Pet → AI Thinks → Pet Makes Intelligent Response |
+| Create New Pet | Tray → Manager → Create |
+| Switch Pet | Tray → Manager → Select Another Pet |
+| Temporarily Hide | Tray → Hide Pet |
+| Move Position | Directly drag the pet floating window |
+| Modify Settings | Tray → Settings Center |
 
-## 4. 界面设计
+## 4. Related Documents
 
-### 4.1 宠物悬浮窗
-
-```
-          ┌─────────────┐
-          │             │
-          │   [3D 模型]  │  <- 无边框透明窗口
-          │             │     可拖拽到任意位置
-          │     >_<     │  <- 宠物表情/状态动画
-          │             │
-          └─────────────┘
-               ▲
-               │
-          默认桌面右下角
-```
-
-### 4.2 系统托盘菜单
-
-```
-    ┌─────────────────┐
-    │ 显示宠物        │
-    │ ─────────────── │
-    │ 打开管理器      │
-    │ 设置            │
-    │ ─────────────── │
-    │ 退出            │
-    └─────────────────┘
-```
-
-### 4.3 管理器界面
-
-管理器和设置中心是独立进程、独立窗口，分别从托盘菜单
-打开。
-
-**宠物管理器**（技术方案待定）：
-
-```
-┌───────────────────────────────────────────┐
-│  Pet 宠物管理器                        [x]│
-├───────────────────────────────────────────┤
-│                                           │
-│  ┌────────────────────────────────────┐  │
-│  │           创建新宠物               │  │
-│  │                                    │  │
-│  │  描述: [_______________________]   │  │
-│  │                                    │  │
-│  │                [生成]              │  │
-│  └────────────────────────────────────┘  │
-│                                           │
-│  ──────────── 我的宠物 ───────────        │
-│                                           │
-│  ┌─────────┐  ┌─────────┐  ┌─────────┐  │
-│  │ [预览]  │  │ [预览]  │  │ [预览]  │  │
-│  │ 小白兔  │  │ 机器猫  │  │ 小狐狸  │  │
-│  │ [使用中]│  │ [切换]  │  │ [切换]  │  │
-│  └─────────┘  └─────────┘  └─────────┘  │
-│                                           │
-└───────────────────────────────────────────┘
-```
-
-**设置中心**（Iced）：
-
-```
-┌───────────────────────────────────────────┐
-│  Pet 设置                              [x]│
-├───────────────────────────────────────────┤
-│                                           │
-│  General                                  │
-│  ┌────────────────────────────────────┐  │
-│  │ [x] 开机自启动                     │  │
-│  │ 语言: [中文      v]               │  │
-│  └────────────────────────────────────┘  │
-│                                           │
-│  Appearance                               │
-│  ┌────────────────────────────────────┐  │
-│  │ 缩放:  [------|----]  1.0x        │  │
-│  │ 透明度: [--------|--]  0.9        │  │
-│  │ [x] 置顶显示                      │  │
-│  └────────────────────────────────────┘  │
-│                                           │
-│  AI                                       │
-│  ┌────────────────────────────────────┐  │
-│  │ [x] 启用 AI                       │  │
-│  │ 提供商: [OpenAI    v]             │  │
-│  │ API Key: [____________________]   │  │
-│  │ 模型:   [gpt-4o   v]             │  │
-│  │ 端点:   [____________________]   │  │
-│  │                                    │  │
-│  │ 性格配置:                          │  │
-│  │  名字: [小鸭鸭_______________]    │  │
-│  │  特质: [活泼] [好奇] [+]         │  │
-│  └────────────────────────────────────┘  │
-│                                           │
-│  Meshy AI                                 │
-│  ┌────────────────────────────────────┐  │
-│  │ API Key: [____________________]   │  │
-│  └────────────────────────────────────┘  │
-│                                           │
-│  About                                    │
-│  ┌────────────────────────────────────┐  │
-│  │ Pet v0.1.0                        │  │
-│  │ github.com/wangeguo/pet           │  │
-│  └────────────────────────────────────┘  │
-│                                           │
-└───────────────────────────────────────────┘
-```
-
-## 5. 相关文档
-
-- [技术架构文档](architecture.md) -
-  技术架构、数据模型、依赖清单等
-- [开发路线图](roadmap.md) - 详细的开发计划和任务清单
+- [Technical Architecture](architecture.md) - Technical
+  architecture, data models, dependency list, etc.
+- [Development Roadmap](roadmap.md) - Detailed development plan
+  and task list

@@ -1,8 +1,10 @@
 # Pet
 
-AI-driven intelligent desktop companion. Create personalized 3D
-pets powered by AI that live on your desktop, interact with you,
-and express dynamic behaviors.
+AI-driven intelligent desktop companion. Generate personalized
+3D pet models through AI, and pets reside on your desktop as
+floating windows. The built-in AI Brain understands user
+interaction intent and dynamically generates pet behaviors,
+delivering a warm and intelligent companionship experience.
 
 ## Features
 
