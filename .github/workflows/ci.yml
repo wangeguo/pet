@@ -3,12 +3,17 @@ name: Continuous Integration
 on:
   pull_request:
     paths-ignore:
-      - README.md
+      - "*.md"
       - docs/**
+      - LICENSE
+      - .github/ISSUE_TEMPLATE/**
   push:
+    branches: [main]
     paths-ignore:
-      - README.md
+      - "*.md"
       - docs/**
+      - LICENSE
+      - .github/ISSUE_TEMPLATE/**
 
 env:
   CARGO_TERM_COLOR: always
