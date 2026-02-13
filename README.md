@@ -11,12 +11,11 @@ delivering a warm and intelligent companionship experience.
 - **3D Desktop Pet** — GLB/glTF models rendered via Bevy in a
   transparent, borderless, always-on-top window
 - **Replay-Based Behavior** — deterministic behavior scripts
-  drive pet actions (idle, walk, happy, sleep, bounce, spin)
+  drive pet actions
 - **Drag & Click Interaction** — drag your pet anywhere on the
   desktop, click to trigger reactions
 - **AI Brain** — LLM-powered behavior generation that
-  understands user intent and dynamically creates behavior
-  scripts
+  understands user intent and dynamically creates scripts
 - **AI Pet Generation** — create unique 3D pet models from
   text descriptions via Meshy AI
 - **System Tray** — quick access to show/hide pet, open
