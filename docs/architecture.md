@@ -642,59 +642,7 @@ GET https://api.meshy.ai/v2/text-to-3d/{task_id}
 - `SUCCEEDED` - Completed
 - `FAILED` - Failed
 
-## 8. Dependency List
-
-```toml
-# Cargo.toml (workspace)
-[workspace]
-resolver = "2"
-members = ["crates/*"]
-
-# crates/common
-[dependencies]
-serde = { version = "1", features = ["derive"] }
-serde_json = "1"
-config = "0.14"
-uuid = { version = "1", features = ["v4", "serde"] }
-thiserror = "2"
-
-# crates/app
-[dependencies]
-common = { path = "../common" }
-tokio = { version = "1", features = ["full", "process"] }
-notify = "7"
-
-# crates/tray
-[dependencies]
-common = { path = "../common" }
-tray-icon = "0.21"
-
-# crates/theater
-[dependencies]
-common = { path = "../common" }
-bevy = "0.18"
-
-# crates/brain
-[dependencies]
-common = { path = "../common" }
-rig-core = "0.11"
-tokio = { version = "1", features = ["full"] }
-serde.workspace = true
-serde_json.workspace = true
-tracing.workspace = true
-
-# crates/settings
-[dependencies]
-common = { path = "../common" }
-iced = { version = "0.14", features = ["tokio"] }
-
-# crates/manager (technical approach TBD)
-[dependencies]
-common = { path = "../common" }
-reqwest = { version = "0.12", features = ["json"] }
-```
-
-## 9. Behavior Script Examples
+## 8. Behavior Script Examples
 
 ```ron
 // assets/scripts/idle.ron
@@ -736,7 +684,7 @@ BehaviorScript(
 )
 ```
 
-## 10. References
+## 9. References
 
 - [Bevy Engine Documentation](https://bevyengine.org/learn/)
 - [Bevy Cheat Book](https://bevy-cheatbook.github.io/)

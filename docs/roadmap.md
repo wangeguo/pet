@@ -3,8 +3,6 @@
 Based on the [Product Document](product.md) and
 [Architecture Document](architecture.md).
 
----
-
 ## Phase 1: Foundation Framework ✅
 
 **Goal**: Build the project infrastructure and multi-process
@@ -21,8 +19,6 @@ communication mechanism
   state sync
 - [x] 1.7 System tray process - tray-icon tray and menu
 
----
-
 ## Phase 2: Theater Process (Bevy) ✅
 
 **Goal**: Implement pet 3D rendering and basic interaction
@@ -35,8 +31,6 @@ communication mechanism
 - [x] 2.6 Lighting setup
 - [x] 2.7 Window dragging
 - [x] 2.8 Click interaction
-
----
 
 ## Phase 3: Replay System ✅
 
@@ -60,8 +54,6 @@ system
 - [x] 3.12 Bounce action - Bounce
 - [x] 3.13 Spin action - Spin
 
----
-
 ## Phase 4: IPC Infrastructure
 
 **Goal**: Establish UDS bidirectional real-time communication
@@ -78,8 +70,6 @@ layer as the foundation for Brain
   ECS events
 - [ ] 4.6 Integration tests - theater <-> app message
   round-trip verification
-
----
 
 ## Phase 5: Settings Center
 
@@ -104,8 +94,6 @@ interface (Iced)
   Settings
 - [ ] 5.10 Tray menu update - Add "Settings" entry
 
----
-
 ## Phase 6: Pet Manager
 
 **Goal**: Implement pet creation and management interface
@@ -120,8 +108,6 @@ interface (Iced)
   Pending/InProgress/Succeeded
 - [ ] 6.5 Pet list - Display/switch/delete pets
 - [ ] 6.6 Model preview
-
----
 
 ## Phase 7: AI Brain
 
@@ -150,8 +136,6 @@ interface (Iced)
 - [ ] 7.11 End-to-end integration - Click -> brain -> LLM ->
   script -> theater replay
 
----
-
 ## Phase 8: Experience Polish
 
 **Goal**: Improve stability and refine AI interaction experience
@@ -176,8 +160,6 @@ interface (Iced)
 - [ ] 8.11 Performance optimization - Rendering performance,
   LLM call caching
 
----
-
 ## Phase 9: Voice Interaction (Future)
 
 **Goal**: Implement voice input and output
@@ -190,8 +172,6 @@ interface (Iced)
 - [ ] 9.5 Voice Settings UI - Voice-related settings interface
 - [ ] 9.6 Audio output - Voice and sound effect playback
 
----
-
 ## Phase 10: Advanced Features (Future)
 
 **Goal**: Advanced integration and extensibility
@@ -203,34 +183,3 @@ interface (Iced)
 - [ ] 10.3 External system integration - Brain as orchestrator
   interfacing with external agent systems (e.g., OpenClaw),
   or building a similar multi-agent collaboration platform
-
----
-
-## Milestones
-
-| Milestone | Completion Criteria |
-|-----------|-------------------|
-| **M1: Minimum Viable** ✅ | Phase 1 + 2, can display static 3D pet |
-| **M2: Behavior System** ✅ | Phase 3, pet can auto-execute behavior scripts |
-| **M3: Real-time Communication** | Phase 4, bidirectional real-time IPC |
-| **M4: Settings System** | Phase 5, centralized settings available |
-| **M5: Pet Management** | Phase 6, can create/manage pets |
-| **M6: Intelligent Companion** | Phase 7, AI-driven dynamic behavior |
-| **M7: Experience Ready** | Phase 8, stable and complete product |
-| **M8: Voice Interaction** | Phase 9, voice input and output |
-
----
-
-## Technology Stack
-
-| Area | Technology |
-|------|-----------|
-| Pet Theater | Bevy 0.18 |
-| Settings Center | Iced 0.14 |
-| Pet Manager | TBD |
-| System Tray | tray-icon 0.21 |
-| AI Brain | rig.rs |
-| Pet Generation | Meshy AI |
-| Real-time Communication | Unix Domain Socket |
-| Configuration Storage | config crate |
-| Model Format | GLB/glTF |
