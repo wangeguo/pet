@@ -12,23 +12,32 @@
 - User-facing messages: may be localized
 - Development discussions: Chinese
 
-## Project structure
+## Architecture
 
-Multi-process desktop pet application:
-- `app` - main process, manages child processes
-- `theater` - Bevy 0.18 for 3D pet rendering
-- `tray` - system tray using tray-icon
-- `manager` - Iced GUI for pet management
-- `common` - shared library (models, config, scripts)
+Multi-process desktop pet app with replay-based behavior system.
+See `docs/architecture.md` for details.
+
+Crates: `app`, `theater`, `tray`, `manager`, `common`.
+
+## Toolchain
+
+- Rust nightly (edition 2024, let-chains used throughout)
 
 ## Build commands
 
 Use `justfile` for all operations (`just` to list):
-- `just check` - fmt, clippy, test (run after changes)
+- `just check` - fmt + clippy + test (run after changes)
 - `just build` - build all crates
-- `just run` - run main app
+- `just clippy` - lint with `-D warnings`
+- `just test` - run all tests
+- `just fmt` - fix formatting (requires nightly)
+- `just check-fmt` - check formatting (requires nightly)
+- `just run` - run main app (builds first)
 - `just run-theater` - run Bevy theater
 - `just run-tray` - run tray process
+
+Run a single test:
+`cargo test --package common -- paths::tests::env_override_with_valid_dir`
 
 Fix all linting errors before completing tasks.
 
@@ -80,8 +89,7 @@ Do not execute git commands directly - user will commit.
 ## Documentation
 
 - `///` for public API docs
-- Reference `docs/` for requirements and architecture:
-  - `product.md`, `architecture.md`, `roadmap.md`
+- Reference `docs/` for requirements and architecture
 
 ## Markdown formatting
 
