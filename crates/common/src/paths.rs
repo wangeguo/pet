@@ -66,6 +66,12 @@ impl AppPaths {
         self.data_dir.join("logs")
     }
 
+    /// UDS socket path for IPC communication
+    #[must_use]
+    pub fn socket_path(&self) -> PathBuf {
+        self.config_dir.join("pet.sock")
+    }
+
     #[must_use]
     pub fn model_path(&self, pet_id: &uuid::Uuid) -> PathBuf {
         self.models_dir().join(format!("{pet_id}.glb"))

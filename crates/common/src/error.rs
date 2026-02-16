@@ -34,6 +34,15 @@ pub enum Error {
 
     #[error("Auto-start error: {0}")]
     AutoStart(String),
+
+    #[error("IPC connection error: {0}")]
+    IpcConnection(String),
+
+    #[error("IPC message too large: {0} bytes")]
+    IpcMessageTooLarge(u32),
+
+    #[error("IPC protocol error: {0}")]
+    IpcProtocol(String),
 }
 
 pub type Result<T> = std::result::Result<T, Error>;

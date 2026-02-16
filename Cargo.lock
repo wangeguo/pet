@@ -166,6 +166,8 @@ version = "0.2.0"
 dependencies = [
  "common",
  "notify",
+ "serde_json",
+ "tempfile",
  "tokio",
  "tracing",
  "tracing-subscriber",
@@ -6193,6 +6195,8 @@ dependencies = [
  "bevy",
  "common",
  "rand 0.10.0",
+ "serde_json",
+ "tokio",
  "tracing",
  "tracing-subscriber",
 ]
