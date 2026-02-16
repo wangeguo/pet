@@ -54,21 +54,21 @@ system
 - [x] 3.12 Bounce action - Bounce
 - [x] 3.13 Spin action - Spin
 
-## Phase 4: IPC Infrastructure
+## Phase 4: IPC Infrastructure ✅
 
 **Goal**: Establish UDS bidirectional real-time communication
 layer as the foundation for Brain
 
-- [ ] 4.1 IPC message types - Define IpcEnvelope, ProcessId,
+- [x] 4.1 IPC message types - Define IpcEnvelope, ProcessId,
   IpcMessage in common
-- [ ] 4.2 UDS server - UDS listener in the app process
-- [ ] 4.3 UDS client - Child process connection and message
+- [x] 4.2 UDS server - UDS listener in the app process
+- [x] 4.3 UDS client - Child process connection and message
   send/receive
-- [ ] 4.4 Message routing - MessageRouter in app, forwarding
+- [x] 4.4 Message routing - MessageRouter in app, forwarding
   messages by target
-- [ ] 4.5 Theater IPC plugin - Bevy plugin bridging UDS and
+- [x] 4.5 Theater IPC plugin - Bevy plugin bridging UDS and
   ECS events
-- [ ] 4.6 Integration tests - theater <-> app message
+- [x] 4.6 Integration tests - theater <-> app message
   round-trip verification
 
 ## Phase 5: Settings Center
