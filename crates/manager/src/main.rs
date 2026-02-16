@@ -1,6 +1,10 @@
+mod app;
+mod views;
+
+use app::PetManager;
 use tracing::info;
 
-fn main() {
+fn main() -> iced::Result {
     tracing_subscriber::fmt()
         .with_env_filter(
             tracing_subscriber::EnvFilter::from_default_env()
@@ -8,10 +12,12 @@ fn main() {
         )
         .init();
 
-    info!("Manager process started (placeholder for Phase 4)");
+    info!("Manager process starting...");
 
-    // Phase 4 will implement the full Iced application
-    // For now, just keep the process running briefly
-    std::thread::sleep(std::time::Duration::from_secs(5));
-    info!("Manager process exiting");
+    iced::application(PetManager::new, PetManager::update, PetManager::view)
+        .title("Pet Manager")
+        .window_size(iced::Size::new(600.0, 500.0))
+        .subscription(PetManager::subscription)
+        .theme(PetManager::theme)
+        .run()
 }
