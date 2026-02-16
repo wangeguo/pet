@@ -220,11 +220,24 @@ impl ProcessManager {
                         }
                     }
                     Some(_event) = rx.recv() => {
-                        info!("Config file changed, reloading...");
+                        info!("Config/state file changed, reloading...");
                         if let Ok(config) = AppConfig::load(&self.paths)
-                            && let Err(e) = autostart::sync_autostart(config.auto_start)
+                            && let Err(e) = autostart::sync_autostart(config.general.auto_start)
                         {
                             error!("Failed to sync auto-start on config change: {e}");
+                        }
+
+                        if let Ok(state) = AppState::load(&self.paths) {
+                            if state.manager_open && self.manager.is_none()
+                                && let Err(e) = self.start_manager()
+                            {
+                                error!("Failed to start manager: {e}");
+                            }
+                            if state.settings_open && self.settings.is_none()
+                                && let Err(e) = self.start_settings()
+                            {
+                                error!("Failed to start settings: {e}");
+                            }
                         }
                     }
                     result = listener.accept() => {
