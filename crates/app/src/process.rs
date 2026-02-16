@@ -1,4 +1,4 @@
-use crate::ipc::{IpcServer, MessageRouter};
+use app::ipc::{IpcServer, MessageRouter};
 use common::config::{AppConfig, AppState};
 use common::paths::AppPaths;
 use common::{Result, autostart};
