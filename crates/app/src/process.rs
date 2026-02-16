@@ -1,3 +1,4 @@
+use crate::ipc::{IpcServer, MessageRouter};
 use common::config::{AppConfig, AppState};
 use common::paths::AppPaths;
 use common::{Result, autostart};
@@ -163,6 +164,12 @@ impl ProcessManager {
             watcher
         };
 
+        // Setup IPC server
+        let mut ipc_server = IpcServer::new(self.paths.socket_path());
+        let mut ipc_incoming = ipc_server.take_incoming();
+        let listener = ipc_server.start()?;
+        let router = MessageRouter::new(ipc_server.clients());
+
         info!("Process manager running, waiting for events...");
 
         loop {
@@ -185,9 +192,24 @@ impl ProcessManager {
                         error!("Failed to sync auto-start on config change: {e}");
                     }
                 }
+                result = listener.accept() => {
+                    match result {
+                        Ok((stream, _addr)) => {
+                            info!("New IPC connection accepted");
+                            ipc_server.handle_connection(stream);
+                        }
+                        Err(e) => {
+                            error!("Failed to accept IPC connection: {e}");
+                        }
+                    }
+                }
+                Some(msg) = ipc_incoming.recv() => {
+                    router.route(msg.envelope).await;
+                }
             }
         }
 
+        ipc_server.cleanup();
         self.shutdown().await?;
         Ok(())
     }

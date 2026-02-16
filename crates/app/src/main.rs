@@ -1,3 +1,4 @@
+mod ipc;
 mod process;
 
 use common::autostart;
