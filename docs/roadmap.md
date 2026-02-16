@@ -71,28 +71,28 @@ layer as the foundation for Brain
 - [x] 4.6 Integration tests - theater <-> app message
   round-trip verification
 
-## Phase 5: Settings Center
+## Phase 5: Settings Center ✅
 
 **Goal**: Implement centralized configuration management
 interface (Iced)
 
-- [ ] 5.1 Refactor AppConfig - Grouped structure
+- [x] 5.1 Refactor AppConfig - Grouped structure
   (GeneralSettings / AppearanceSettings /
   AiSettings / MeshySettings)
-- [ ] 5.2 Config migration - Old flat structure -> new grouped
+- [x] 5.2 Config migration - Old flat structure -> new grouped
   structure, backward compatible
-- [ ] 5.3 Create settings crate - Iced Application base
+- [x] 5.3 Create settings crate - Iced Application base
   framework
-- [ ] 5.4 Settings: General - Auto-start, language
-- [ ] 5.5 Settings: Appearance - Scale, position, always on
+- [x] 5.4 Settings: General - Auto-start, language
+- [x] 5.5 Settings: Appearance - Scale, position, always on
   top, opacity
-- [ ] 5.6 Settings: AI - Provider, API key, model, endpoint,
+- [x] 5.6 Settings: AI - Provider, API key, model, endpoint,
   personality configuration
-- [ ] 5.7 Settings: Meshy AI - API Key
-- [ ] 5.8 Settings: About - Version, build info
-- [ ] 5.9 Auto-start migration - Move from tray menu to
+- [x] 5.7 Settings: Meshy AI - API Key
+- [x] 5.8 Settings: About - Version, build info
+- [x] 5.9 Auto-start migration - Move from tray menu to
   Settings
-- [ ] 5.10 Tray menu update - Add "Settings" entry
+- [x] 5.10 Tray menu update - Add "Settings" entry
 
 ## Phase 6: Pet Manager
 

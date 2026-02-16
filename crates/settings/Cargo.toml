@@ -1,0 +1,15 @@
+[package]
+name = "settings"
+version.workspace = true
+edition.workspace = true
+description = "Settings process (Iced) for Pet desktop companion"
+
+[[bin]]
+name = "pet-settings"
+path = "src/main.rs"
+
+[dependencies]
+common.workspace = true
+iced.workspace = true
+tracing-subscriber.workspace = true
+tracing.workspace = true

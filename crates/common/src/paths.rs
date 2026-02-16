@@ -22,6 +22,14 @@ impl AppPaths {
         })
     }
 
+    #[cfg(test)]
+    pub fn with_dirs(config_dir: PathBuf, data_dir: PathBuf) -> Self {
+        Self {
+            config_dir,
+            data_dir,
+        }
+    }
+
     pub fn ensure_dirs(&self) -> Result<()> {
         std::fs::create_dir_all(&self.config_dir)?;
         std::fs::create_dir_all(&self.data_dir)?;

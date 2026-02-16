@@ -71,6 +71,10 @@ run-theater:
 run-manager:
     cargo run --bin pet-manager
 
+# Run the settings process
+run-settings:
+    cargo run --bin pet-settings
+
 # Build all binaries in release mode for a specific target
 build-release target:
     cargo build --release --target {{ target }}
@@ -82,7 +86,7 @@ package-tar target platform:
     version=$(grep -m1 '^version = ' Cargo.toml | sed 's/version = "\(.*\)"/\1/')
     staging="pet-${version}-{{ platform }}"
     mkdir -p "${staging}/assets/pets"
-    for bin in pet pet-tray pet-theater pet-manager; do
+    for bin in pet pet-tray pet-theater pet-manager pet-settings; do
         cp "target/{{ target }}/release/${bin}" "${staging}/"
     done
     cp assets/pets/duck.glb "${staging}/assets/pets/"
@@ -97,7 +101,7 @@ package-zip target platform:
     version=$(grep -m1 '^version = ' Cargo.toml | sed 's/version = "\(.*\)"/\1/')
     staging="pet-${version}-{{ platform }}"
     mkdir -p "${staging}/assets/pets"
-    for bin in pet pet-tray pet-theater pet-manager; do
+    for bin in pet pet-tray pet-theater pet-manager pet-settings; do
         cp "target/{{ target }}/release/${bin}.exe" "${staging}/"
     done
     cp assets/pets/duck.glb "${staging}/assets/pets/"
@@ -123,7 +127,7 @@ download-release tag platform:
         *)
             gh release download "{{ tag }}" --pattern "${archive}.tar.gz"
             tar xzf "${archive}.tar.gz"
-            for bin in pet pet-tray pet-theater pet-manager; do
+            for bin in pet pet-tray pet-theater pet-manager pet-settings; do
                 cp "${archive}/${bin}" "${target_dir}/"
             done
             ;;
@@ -177,7 +181,7 @@ package-deb target:
     deb_version="${version//-/\~}"
     # cargo-deb rewrites target/release/ to target/<target>/release/ when --target is used
     mkdir -p "target/{{ target }}/release"
-    for bin in pet pet-tray pet-theater pet-manager; do
+    for bin in pet pet-tray pet-theater pet-manager pet-settings; do
         cp "target/release/${bin}" "target/{{ target }}/release/"
     done
     cargo deb --no-build --no-strip --manifest-path crates/app/Cargo.toml \
@@ -201,7 +205,7 @@ package-rpm target:
     rpm_version="${version//-/\~}"
     # cargo-generate-rpm rewrites target/release/ to target/<target>/release/ when --target is used
     mkdir -p "target/{{ target }}/release"
-    for bin in pet pet-tray pet-theater pet-manager; do
+    for bin in pet pet-tray pet-theater pet-manager pet-settings; do
         cp "target/release/${bin}" "target/{{ target }}/release/"
     done
     cargo generate-rpm -p crates/app --target {{ target }} \
@@ -240,7 +244,7 @@ package-dmg platform:
     cp "${resource_dir}/graphics/app.icns" "${app_dir}/Contents/Resources/"
     cp "${resource_dir}/wrapper.sh" "${app_dir}/Contents/MacOS/"
     chmod +x "${app_dir}/Contents/MacOS/wrapper.sh"
-    for bin in pet pet-tray pet-theater pet-manager; do
+    for bin in pet pet-tray pet-theater pet-manager pet-settings; do
         cp "target/release/${bin}" "${app_dir}/Contents/MacOS/"
     done
     cp assets/pets/duck.glb "${app_dir}/Contents/Resources/assets/pets/"

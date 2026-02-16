@@ -27,7 +27,7 @@ async fn main() -> Result<()> {
     let config = AppConfig::load(&paths)?;
     info!("Loaded configuration with {} pets", config.pets.len());
 
-    if let Err(e) = autostart::sync_autostart(config.auto_start) {
+    if let Err(e) = autostart::sync_autostart(config.general.auto_start) {
         error!("Failed to sync auto-start setting: {e}");
     }
 

@@ -7,7 +7,10 @@ pub mod paths;
 pub mod script;
 pub mod storage;
 
-pub use config::AppConfig;
+pub use config::{
+    AiProvider, AiSettings, AppConfig, AppearanceSettings, GeneralSettings, MeshySettings,
+    PersonalityConfig,
+};
 pub use error::{Error, Result};
 pub use ipc::{IpcEnvelope, IpcMessage, ProcessId};
 pub use models::Pet;

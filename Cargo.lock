@@ -5811,6 +5811,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "settings"
+version = "0.2.0"
+dependencies = [
+ "common",
+ "iced",
+ "tracing",
+ "tracing-subscriber",
+]
+
+[[package]]
 name = "sha2"
 version = "0.10.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
