@@ -271,6 +271,8 @@ pub struct AppState {
     pub pet_visible: bool,
     pub theater_running: bool,
     pub manager_open: bool,
+    #[serde(default)]
+    pub settings_open: bool,
 }
 
 impl AppState {
