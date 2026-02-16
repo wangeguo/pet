@@ -9,6 +9,7 @@ pub struct Pet {
     pub name: String,
     pub description: String,
     pub model_path: PathBuf,
+    pub thumbnail_path: Option<PathBuf>,
     pub created_at: Timestamp,
 }
 
@@ -20,6 +21,7 @@ impl Pet {
             name,
             description,
             model_path,
+            thumbnail_path: None,
             created_at: Timestamp::now(),
         }
     }

@@ -13,7 +13,7 @@ bevy = { version = "0.18", default-features = false }
 common = { path = "crates/common" }
 config = { version = "0.15", features = ["toml"] }
 directories = "6"
-iced = { version = "0.14", features = ["tokio"] }
+iced = { version = "0.14", features = ["tokio", "image"] }
 jiff = { version = "0.2", features = ["serde"] }
 notify = "8"
 rand = "0.10"

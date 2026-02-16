@@ -94,20 +94,23 @@ interface (Iced)
   Settings
 - [x] 5.10 Tray menu update - Add "Settings" entry
 
-## Phase 6: Pet Manager
+## Phase 6: Pet Manager ✅
 
 **Goal**: Implement pet creation and management interface
-(technical approach TBD)
+(Iced GUI)
 
-- [ ] 6.1 Determine technical approach - Evaluate Bevy / Web /
-  other
-- [ ] 6.2 Manager base framework
-- [ ] 6.3 Create pet interface - Description input + Meshy AI
-  integration
-- [ ] 6.4 Generation progress display -
-  Pending/InProgress/Succeeded
-- [ ] 6.5 Pet list - Display/switch/delete pets
-- [ ] 6.6 Model preview
+- [x] 6.1 Manager base framework - Iced application with
+  tracing, window config, subscription support
+- [x] 6.2 Meshy AI client - text-to-3d task creation, status
+  polling, model/thumbnail download
+- [x] 6.3 Create pet interface - Name/description input, API
+  key status, Generate button
+- [x] 6.4 Generation progress display - Progress bar, dynamic
+  polling (PENDING 5s / IN_PROGRESS 3s), close protection
+- [x] 6.5 Pet list - Display/switch/delete pets with
+  confirmation flow
+- [x] 6.6 Model preview - Thumbnail display in cards, Preview
+  button to activate pet in Theater
 
 ## Phase 7: AI Brain
 
