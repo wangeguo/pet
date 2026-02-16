@@ -13,6 +13,8 @@ pub struct PetManager {
     pub config: AppConfig,
     pub storage: StorageService,
     pub current_view: View,
+    pub pet_name: String,
+    pub pet_description: String,
     pub delete_confirmation: Option<Uuid>,
     pub error_message: Option<String>,
 }
@@ -21,6 +23,9 @@ pub struct PetManager {
 pub enum Message {
     NavigateToCreate,
     NavigateTo(View),
+    UpdatePetName(String),
+    UpdatePetDescription(String),
+    StartGeneration,
     SwitchPet(Uuid),
     DeletePet(Uuid),
     ConfirmDelete(Uuid),
@@ -41,6 +46,8 @@ impl PetManager {
             config,
             storage,
             current_view: View::PetList,
+            pet_name: String::new(),
+            pet_description: String::new(),
             delete_confirmation: None,
             error_message: None,
         };
@@ -54,7 +61,22 @@ impl PetManager {
                 self.current_view = view;
             }
             Message::NavigateToCreate => {
+                self.pet_name.clear();
+                self.pet_description.clear();
                 self.current_view = View::CreatePet;
+            }
+            Message::UpdatePetName(name) => {
+                self.pet_name = name;
+            }
+            Message::UpdatePetDescription(desc) => {
+                self.pet_description = desc;
+            }
+            Message::StartGeneration => {
+                // Will be implemented in Step 6
+                info!(
+                    "Generation requested: name={}, desc={}",
+                    self.pet_name, self.pet_description
+                );
             }
             Message::SwitchPet(id) => {
                 self.config.set_active_pet(id);
@@ -97,7 +119,11 @@ impl PetManager {
     pub fn view(&self) -> Element<'_, Message> {
         let content = match self.current_view {
             View::PetList => views::pet_list::view(&self.config, self.delete_confirmation),
-            View::CreatePet => self.view_create_pet(),
+            View::CreatePet => views::create_pet::view(
+                &self.pet_name,
+                &self.pet_description,
+                self.config.meshy_api_key.is_some(),
+            ),
         };
 
         let mut page = column![content].spacing(10);
@@ -124,15 +150,5 @@ impl PetManager {
 
     pub fn subscription(&self) -> iced::Subscription<Message> {
         iced::Subscription::none()
-    }
-
-    fn view_create_pet(&self) -> Element<'_, Message> {
-        column![
-            button("< Back").on_press(Message::NavigateTo(View::PetList)),
-            text("Create New Pet").size(24),
-            text("Coming soon..."),
-        ]
-        .spacing(15)
-        .into()
     }
 }
