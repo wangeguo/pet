@@ -1,25 +1,30 @@
 use common::config::AppConfig;
 use common::paths::AppPaths;
 use common::storage::StorageService;
-use iced::widget::{Space, button, column, container, row, text};
+use iced::widget::{button, column, container, row, text};
 use iced::{Element, Length, Theme};
-use tracing::info;
+use tracing::{error, info};
+use uuid::Uuid;
 
-use crate::views::View;
+use crate::views::{self, View};
 
 pub struct PetManager {
-    #[expect(dead_code)]
     pub paths: AppPaths,
     pub config: AppConfig,
-    #[expect(dead_code)]
     pub storage: StorageService,
     pub current_view: View,
+    pub delete_confirmation: Option<Uuid>,
     pub error_message: Option<String>,
 }
 
 #[derive(Debug, Clone)]
 pub enum Message {
+    NavigateToCreate,
     NavigateTo(View),
+    SwitchPet(Uuid),
+    DeletePet(Uuid),
+    ConfirmDelete(Uuid),
+    CancelDelete,
     DismissError,
 }
 
@@ -36,6 +41,7 @@ impl PetManager {
             config,
             storage,
             current_view: View::PetList,
+            delete_confirmation: None,
             error_message: None,
         };
 
@@ -47,6 +53,40 @@ impl PetManager {
             Message::NavigateTo(view) => {
                 self.current_view = view;
             }
+            Message::NavigateToCreate => {
+                self.current_view = View::CreatePet;
+            }
+            Message::SwitchPet(id) => {
+                self.config.set_active_pet(id);
+                if let Err(e) = self.config.save(&self.paths) {
+                    error!("Failed to save config: {e}");
+                    self.error_message = Some(format!("Failed to save: {e}"));
+                } else {
+                    info!("Switched active pet to {id}");
+                }
+            }
+            Message::DeletePet(id) => {
+                self.delete_confirmation = Some(id);
+            }
+            Message::ConfirmDelete(id) => {
+                if let Some(pet) = self.config.get_pet(id).cloned()
+                    && let Err(e) = self.storage.delete_pet_data(&pet)
+                {
+                    error!("Failed to delete pet data: {e}");
+                    self.error_message = Some(format!("Failed to delete: {e}"));
+                }
+                self.config.remove_pet(id);
+                if let Err(e) = self.config.save(&self.paths) {
+                    error!("Failed to save config: {e}");
+                    self.error_message = Some(format!("Failed to save: {e}"));
+                } else {
+                    info!("Deleted pet {id}");
+                }
+                self.delete_confirmation = None;
+            }
+            Message::CancelDelete => {
+                self.delete_confirmation = None;
+            }
             Message::DismissError => {
                 self.error_message = None;
             }
@@ -56,7 +96,7 @@ impl PetManager {
 
     pub fn view(&self) -> Element<'_, Message> {
         let content = match self.current_view {
-            View::PetList => self.view_pet_list(),
+            View::PetList => views::pet_list::view(&self.config, self.delete_confirmation),
             View::CreatePet => self.view_create_pet(),
         };
 
@@ -84,19 +124,6 @@ impl PetManager {
 
     pub fn subscription(&self) -> iced::Subscription<Message> {
         iced::Subscription::none()
-    }
-
-    fn view_pet_list(&self) -> Element<'_, Message> {
-        let header = row![
-            text("Pet Manager").size(24),
-            Space::new().width(Length::Fill),
-            button("+ Create").on_press(Message::NavigateTo(View::CreatePet)),
-        ]
-        .spacing(10);
-
-        let pet_count = text(format!("{} pets", self.config.pets.len()));
-
-        column![header, pet_count].spacing(15).into()
     }
 
     fn view_create_pet(&self) -> Element<'_, Message> {
