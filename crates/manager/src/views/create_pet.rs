@@ -31,7 +31,7 @@ pub fn view<'a>(
     let api_status = if has_api_key {
         text("Meshy API Key: configured").size(12)
     } else {
-        text("Meshy API Key: not configured (set meshy_api_key in config.toml)").size(12)
+        text("Meshy API Key: not configured (set [meshy] api_key in config.toml)").size(12)
     };
 
     let can_generate = !pet_name.is_empty() && !pet_description.is_empty() && has_api_key;

@@ -121,7 +121,7 @@ impl PetManager {
                 self.pet_description = desc;
             }
             Message::StartGeneration => {
-                let Some(api_key) = self.config.meshy_api_key.clone() else {
+                let Some(api_key) = self.config.meshy.api_key.clone() else {
                     self.error_message = Some("Meshy API key not configured".into());
                     return iced::Task::none();
                 };
@@ -169,7 +169,7 @@ impl PetManager {
                 if let Some(ref gs) = self.generation
                     && let Some(ref task_id) = gs.task_id
                 {
-                    let api_key = self.config.meshy_api_key.clone().unwrap();
+                    let api_key = self.config.meshy.api_key.clone().unwrap();
                     let task_id = task_id.clone();
                     return iced::Task::perform(
                         async move {
@@ -345,7 +345,7 @@ impl PetManager {
             View::CreatePet => views::create_pet::view(
                 &self.pet_name,
                 &self.pet_description,
-                self.config.meshy_api_key.is_some(),
+                self.config.meshy.api_key.is_some(),
             ),
             View::Generation => {
                 let gs = self.generation.as_ref();
@@ -401,7 +401,7 @@ impl PetManager {
     }
 
     fn start_download(&self, status: &TaskStatusResponse) -> iced::Task<Message> {
-        let api_key = self.config.meshy_api_key.clone().unwrap();
+        let api_key = self.config.meshy.api_key.clone().unwrap();
         let model_url = status
             .model_urls
             .as_ref()
