@@ -1,4 +1,6 @@
 mod app;
+#[allow(dead_code)]
+mod meshy;
 mod views;
 
 use app::PetManager;
