@@ -1,3 +1,4 @@
+#![cfg(unix)]
 //! Integration tests for the IPC infrastructure
 
 use common::ipc::{IpcEnvelope, IpcMessage, MAX_MESSAGE_SIZE, ProcessId};

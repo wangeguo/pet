@@ -1,3 +1,4 @@
+#[cfg(unix)]
 use app::ipc::{IpcServer, MessageRouter};
 use common::config::{AppConfig, AppState};
 use common::paths::AppPaths;
@@ -164,14 +165,56 @@ impl ProcessManager {
             watcher
         };
 
-        // Setup IPC server
-        let mut ipc_server = IpcServer::new(self.paths.socket_path());
-        let mut ipc_incoming = ipc_server.take_incoming();
-        let listener = ipc_server.start()?;
-        let router = MessageRouter::new(ipc_server.clients());
-
         info!("Process manager running, waiting for events...");
 
+        #[cfg(unix)]
+        {
+            let mut ipc_server = IpcServer::new(self.paths.socket_path());
+            let mut ipc_incoming = ipc_server.take_incoming();
+            let listener = ipc_server.start()?;
+            let router = MessageRouter::new(ipc_server.clients());
+
+            loop {
+                tokio::select! {
+                    _ = signal::ctrl_c() => {
+                        info!("Received shutdown signal");
+                        break;
+                    }
+                    should_exit = self.check_processes() => {
+                        if should_exit {
+                            info!("Tray process exited, shutting down...");
+                            break;
+                        }
+                    }
+                    Some(_event) = rx.recv() => {
+                        info!("Config file changed, reloading...");
+                        if let Ok(config) = AppConfig::load(&self.paths)
+                            && let Err(e) = autostart::sync_autostart(config.auto_start)
+                        {
+                            error!("Failed to sync auto-start on config change: {e}");
+                        }
+                    }
+                    result = listener.accept() => {
+                        match result {
+                            Ok((stream, _addr)) => {
+                                info!("New IPC connection accepted");
+                                ipc_server.handle_connection(stream);
+                            }
+                            Err(e) => {
+                                error!("Failed to accept IPC connection: {e}");
+                            }
+                        }
+                    }
+                    Some(msg) = ipc_incoming.recv() => {
+                        router.route(msg.envelope).await;
+                    }
+                }
+            }
+
+            ipc_server.cleanup();
+        }
+
+        #[cfg(not(unix))]
         loop {
             tokio::select! {
                 _ = signal::ctrl_c() => {
@@ -192,24 +235,9 @@ impl ProcessManager {
                         error!("Failed to sync auto-start on config change: {e}");
                     }
                 }
-                result = listener.accept() => {
-                    match result {
-                        Ok((stream, _addr)) => {
-                            info!("New IPC connection accepted");
-                            ipc_server.handle_connection(stream);
-                        }
-                        Err(e) => {
-                            error!("Failed to accept IPC connection: {e}");
-                        }
-                    }
-                }
-                Some(msg) = ipc_incoming.recv() => {
-                    router.route(msg.envelope).await;
-                }
             }
         }
 
-        ipc_server.cleanup();
         self.shutdown().await?;
         Ok(())
     }
