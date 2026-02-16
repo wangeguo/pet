@@ -27,6 +27,13 @@ impl StorageService {
         Ok(path)
     }
 
+    pub fn save_thumbnail(&self, pet_id: &Uuid, data: &[u8]) -> Result<std::path::PathBuf> {
+        self.paths.ensure_dirs()?;
+        let path = self.paths.models_dir().join(format!("{pet_id}.png"));
+        fs::write(&path, data)?;
+        Ok(path)
+    }
+
     pub fn delete_model(&self, pet_id: &Uuid) -> Result<()> {
         let path = self.paths.model_path(pet_id);
         if path.exists() {
@@ -92,6 +99,10 @@ impl StorageService {
 
     pub fn delete_pet_data(&self, pet: &Pet) -> Result<()> {
         self.delete_model(&pet.id)?;
+        let thumbnail = self.paths.models_dir().join(format!("{}.png", pet.id));
+        if thumbnail.exists() {
+            fs::remove_file(thumbnail)?;
+        }
         Ok(())
     }
 }
