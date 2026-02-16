@@ -1,5 +1,4 @@
 mod app;
-#[allow(dead_code)]
 mod meshy;
 mod views;
 
@@ -19,6 +18,7 @@ fn main() -> iced::Result {
     iced::application(PetManager::new, PetManager::update, PetManager::view)
         .title("Pet Manager")
         .window_size(iced::Size::new(600.0, 500.0))
+        .exit_on_close_request(false)
         .subscription(PetManager::subscription)
         .theme(PetManager::theme)
         .run()

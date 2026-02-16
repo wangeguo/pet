@@ -38,9 +38,6 @@ pub struct ModelUrls {
 pub enum MeshyError {
     #[error("HTTP request failed: {0}")]
     Request(#[from] reqwest::Error),
-
-    #[error("API error: {0}")]
-    Api(String),
 }
 
 impl MeshyClient {
