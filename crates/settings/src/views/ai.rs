@@ -1,6 +1,8 @@
 use common::config::{AiProvider, AppConfig};
 use iced::Element;
-use iced::widget::{column, text};
+use iced::widget::{column, pick_list, row, slider, text, text_input, toggler};
+
+const PROVIDERS: &[&str] = &["OpenAI", "Anthropic", "Ollama", "Custom"];
 
 #[derive(Debug, Clone)]
 pub struct State {
@@ -15,7 +17,6 @@ pub struct State {
     pub temperature: f32,
 }
 
-#[allow(dead_code)]
 #[derive(Debug, Clone)]
 pub enum Message {
     ToggleEnabled(bool),
@@ -27,6 +28,15 @@ pub enum Message {
     TraitsChanged(String),
     CustomPromptChanged(String),
     TemperatureChanged(f32),
+}
+
+fn provider_label(provider: &AiProvider) -> &'static str {
+    match provider {
+        AiProvider::OpenAi => "OpenAI",
+        AiProvider::Anthropic => "Anthropic",
+        AiProvider::Ollama => "Ollama",
+        AiProvider::Custom => "Custom",
+    }
 }
 
 impl State {
@@ -67,10 +77,66 @@ impl State {
     }
 
     pub fn view(&self) -> Element<'_, Message> {
-        column![text("AI Settings").size(24),]
-            .spacing(12)
-            .padding(20)
-            .into()
+        let providers: Vec<String> = PROVIDERS.iter().map(|s| (*s).to_string()).collect();
+        let selected = Some(provider_label(&self.provider).to_string());
+
+        column![
+            text("AI Settings").size(24),
+            toggler(self.enabled)
+                .label("Enable AI")
+                .on_toggle(Message::ToggleEnabled),
+            row![
+                text("Provider"),
+                pick_list(providers, selected, Message::ProviderSelected),
+            ]
+            .spacing(10),
+            row![
+                text("API Key"),
+                text_input("Enter API key", &self.api_key)
+                    .on_input(Message::ApiKeyChanged)
+                    .secure(true),
+            ]
+            .spacing(10),
+            row![
+                text("Model"),
+                text_input("gpt-4", &self.model).on_input(Message::ModelChanged),
+            ]
+            .spacing(10),
+            row![
+                text("Endpoint"),
+                text_input("https://api.openai.com/v1", &self.endpoint)
+                    .on_input(Message::EndpointChanged),
+            ]
+            .spacing(10),
+            text("Personality").size(18),
+            row![
+                text("Name"),
+                text_input("Pet name", &self.personality_name)
+                    .on_input(Message::PersonalityNameChanged),
+            ]
+            .spacing(10),
+            row![
+                text("Traits"),
+                text_input("friendly, curious, playful", &self.traits_text)
+                    .on_input(Message::TraitsChanged),
+            ]
+            .spacing(10),
+            row![
+                text("Custom Prompt"),
+                text_input("Optional custom prompt", &self.custom_prompt)
+                    .on_input(Message::CustomPromptChanged),
+            ]
+            .spacing(10),
+            row![
+                text("Temperature"),
+                slider(0.0..=2.0, self.temperature, Message::TemperatureChanged).step(0.1),
+                text(format!("{:.1}", self.temperature)),
+            ]
+            .spacing(10),
+        ]
+        .spacing(12)
+        .padding(20)
+        .into()
     }
 
     pub fn apply_to(&self, config: &mut AppConfig) {

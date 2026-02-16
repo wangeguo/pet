@@ -1,6 +1,8 @@
 use common::config::AppConfig;
 use iced::Element;
-use iced::widget::{column, text};
+use iced::widget::{column, pick_list, row, text, toggler};
+
+const LANGUAGES: &[&str] = &["en", "zh"];
 
 #[derive(Debug, Clone)]
 pub struct State {
@@ -8,7 +10,6 @@ pub struct State {
     pub language: String,
 }
 
-#[allow(dead_code)]
 #[derive(Debug, Clone)]
 pub enum Message {
     ToggleAutoStart(bool),
@@ -31,10 +32,23 @@ impl State {
     }
 
     pub fn view(&self) -> Element<'_, Message> {
-        column![text("General Settings").size(24),]
-            .spacing(12)
-            .padding(20)
-            .into()
+        let languages: Vec<String> = LANGUAGES.iter().map(|s| (*s).to_string()).collect();
+        let selected = Some(self.language.clone());
+
+        column![
+            text("General Settings").size(24),
+            toggler(self.auto_start)
+                .label("Launch at Login")
+                .on_toggle(Message::ToggleAutoStart),
+            row![
+                text("Language"),
+                pick_list(languages, selected, Message::LanguageSelected),
+            ]
+            .spacing(10),
+        ]
+        .spacing(12)
+        .padding(20)
+        .into()
     }
 
     pub fn apply_to(&self, config: &mut AppConfig) {

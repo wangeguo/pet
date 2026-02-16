@@ -1,6 +1,6 @@
 use common::config::AppConfig;
 use iced::Element;
-use iced::widget::{column, text};
+use iced::widget::{column, row, slider, text, text_input, toggler};
 
 #[derive(Debug, Clone)]
 pub struct State {
@@ -11,7 +11,6 @@ pub struct State {
     pub opacity: f32,
 }
 
-#[allow(dead_code)]
 #[derive(Debug, Clone)]
 pub enum Message {
     ScaleChanged(f32),
@@ -43,10 +42,37 @@ impl State {
     }
 
     pub fn view(&self) -> Element<'_, Message> {
-        column![text("Appearance Settings").size(24),]
-            .spacing(12)
-            .padding(20)
-            .into()
+        column![
+            text("Appearance Settings").size(24),
+            row![
+                text("Pet Scale"),
+                slider(0.5..=3.0, self.pet_scale, Message::ScaleChanged).step(0.1),
+                text(format!("{:.1}", self.pet_scale)),
+            ]
+            .spacing(10),
+            row![
+                text("Position X"),
+                text_input("0", &self.position_x).on_input(Message::PositionXChanged),
+            ]
+            .spacing(10),
+            row![
+                text("Position Y"),
+                text_input("0", &self.position_y).on_input(Message::PositionYChanged),
+            ]
+            .spacing(10),
+            toggler(self.always_on_top)
+                .label("Always on Top")
+                .on_toggle(Message::ToggleAlwaysOnTop),
+            row![
+                text("Opacity"),
+                slider(0.1..=1.0, self.opacity, Message::OpacityChanged).step(0.05),
+                text(format!("{:.0}%", self.opacity * 100.0)),
+            ]
+            .spacing(10),
+        ]
+        .spacing(12)
+        .padding(20)
+        .into()
     }
 
     pub fn apply_to(&self, config: &mut AppConfig) {

@@ -1,13 +1,12 @@
 use common::config::AppConfig;
 use iced::Element;
-use iced::widget::{column, text};
+use iced::widget::{column, row, text, text_input};
 
 #[derive(Debug, Clone)]
 pub struct State {
     pub api_key: String,
 }
 
-#[allow(dead_code)]
 #[derive(Debug, Clone)]
 pub enum Message {
     ApiKeyChanged(String),
@@ -27,10 +26,19 @@ impl State {
     }
 
     pub fn view(&self) -> Element<'_, Message> {
-        column![text("Meshy AI Settings").size(24),]
-            .spacing(12)
-            .padding(20)
-            .into()
+        column![
+            text("Meshy AI Settings").size(24),
+            row![
+                text("API Key"),
+                text_input("Enter Meshy API key", &self.api_key)
+                    .on_input(Message::ApiKeyChanged)
+                    .secure(true),
+            ]
+            .spacing(10),
+        ]
+        .spacing(12)
+        .padding(20)
+        .into()
     }
 
     pub fn apply_to(&self, config: &mut AppConfig) {
