@@ -56,7 +56,7 @@ impl TrayApp {
 
     fn create_tray_icon(&mut self) {
         let icon = create_default_icon();
-        let menu = build_menu(self.state.pet_visible, self.config.auto_start);
+        let menu = build_menu(self.state.pet_visible, self.config.general.auto_start);
 
         let tray_icon = TrayIconBuilder::new()
             .with_menu(Box::new(menu))
@@ -71,7 +71,7 @@ impl TrayApp {
 
     fn rebuild_menu(&self) {
         if let Some(ref tray) = self.tray_icon {
-            let menu = build_menu(self.state.pet_visible, self.config.auto_start);
+            let menu = build_menu(self.state.pet_visible, self.config.general.auto_start);
             tray.set_menu(Some(Box::new(menu)));
         }
     }
@@ -103,10 +103,10 @@ impl ApplicationHandler for TrayApp {
                 }
                 "auto_start" => {
                     info!("Toggle auto-start");
-                    self.config.auto_start = !self.config.auto_start;
+                    self.config.general.auto_start = !self.config.general.auto_start;
                     let _ = self.config.save(&self.paths);
 
-                    if let Err(e) = autostart::sync_autostart(self.config.auto_start) {
+                    if let Err(e) = autostart::sync_autostart(self.config.general.auto_start) {
                         error!("Failed to sync auto-start: {e}");
                     }
                 }

@@ -19,8 +19,11 @@ pub fn run_theater() -> common::Result<()> {
 
     let theater_config = TheaterConfig {
         model_path: config.get_active_pet().map(|pet| pet.model_path.clone()),
-        pet_scale: config.pet_scale,
-        window_position: (config.pet_position.x, config.pet_position.y),
+        pet_scale: config.appearance.pet_scale,
+        window_position: (
+            config.appearance.pet_position.x,
+            config.appearance.pet_position.y,
+        ),
         paths,
     };
 

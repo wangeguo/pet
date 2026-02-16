@@ -180,7 +180,7 @@ impl ProcessManager {
                 Some(_event) = rx.recv() => {
                     info!("Config file changed, reloading...");
                     if let Ok(config) = AppConfig::load(&self.paths)
-                        && let Err(e) = autostart::sync_autostart(config.auto_start)
+                        && let Err(e) = autostart::sync_autostart(config.general.auto_start)
                     {
                         error!("Failed to sync auto-start on config change: {e}");
                     }
