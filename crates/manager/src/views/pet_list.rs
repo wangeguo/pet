@@ -1,5 +1,5 @@
 use common::config::AppConfig;
-use iced::widget::{Space, button, column, container, row, scrollable, text};
+use iced::widget::{Space, button, column, container, image, row, scrollable, text};
 use iced::{Element, Length};
 use uuid::Uuid;
 
@@ -39,6 +39,21 @@ pub fn view<'a>(config: &'a AppConfig, delete_confirmation: Option<Uuid>) -> Ele
         ]
         .spacing(4);
 
+        let mut card_row = row![].spacing(10).align_y(iced::Alignment::Center);
+
+        if let Some(ref thumb_path) = pet.thumbnail_path
+            && thumb_path.exists()
+        {
+            card_row = card_row.push(
+                image(thumb_path.to_string_lossy().to_string())
+                    .width(Length::Fixed(64.0))
+                    .height(Length::Fixed(64.0)),
+            );
+        }
+
+        card_row = card_row.push(info);
+        card_row = card_row.push(Space::new().width(Length::Fill));
+
         let mut actions = row![].spacing(8);
 
         if !is_active {
@@ -48,6 +63,12 @@ pub fn view<'a>(config: &'a AppConfig, delete_confirmation: Option<Uuid>) -> Ele
                     .padding(4),
             );
         }
+
+        actions = actions.push(
+            button("Preview")
+                .on_press(Message::PreviewPet(pet.id))
+                .padding(4),
+        );
 
         if delete_confirmation == Some(pet.id) {
             actions = actions.push(
@@ -64,14 +85,12 @@ pub fn view<'a>(config: &'a AppConfig, delete_confirmation: Option<Uuid>) -> Ele
             );
         }
 
-        let card = container(
-            row![info, Space::new().width(Length::Fill), actions]
-                .spacing(10)
-                .align_y(iced::Alignment::Center),
-        )
-        .padding(12)
-        .width(Length::Fill)
-        .style(container::rounded_box);
+        card_row = card_row.push(actions);
+
+        let card = container(card_row)
+            .padding(12)
+            .width(Length::Fill)
+            .style(container::rounded_box);
 
         list = list.push(card);
     }

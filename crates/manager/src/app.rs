@@ -72,6 +72,7 @@ pub enum Message {
     CloseRequested(iced::window::Id),
     ForceClose,
     CancelClose,
+    PreviewPet(Uuid),
     SwitchPet(Uuid),
     DeletePet(Uuid),
     ConfirmDelete(Uuid),
@@ -290,6 +291,15 @@ impl PetManager {
             }
             Message::CancelClose => {
                 self.close_confirmation = None;
+            }
+            Message::PreviewPet(id) => {
+                self.config.set_active_pet(id);
+                if let Err(e) = self.config.save(&self.paths) {
+                    error!("Failed to save config: {e}");
+                    self.error_message = Some(format!("Failed to save: {e}"));
+                } else {
+                    info!("Preview pet {id}: set active and saved config");
+                }
             }
             Message::SwitchPet(id) => {
                 self.config.set_active_pet(id);
