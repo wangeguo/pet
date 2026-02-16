@@ -57,6 +57,12 @@ impl SettingsApp {
                 self.current_page = page;
             }
             Message::Save => {
+                // Reload config from disk to preserve changes made by
+                // other processes (e.g., manager modifying pets)
+                if let Ok(fresh) = AppConfig::load(&self.paths) {
+                    self.config.pets = fresh.pets;
+                    self.config.active_pet = fresh.active_pet;
+                }
                 self.apply_state_to_config();
                 if let Err(e) = self.config.save(&self.paths) {
                     error!("Failed to save config: {e}");

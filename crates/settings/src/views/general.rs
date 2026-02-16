@@ -1,6 +1,7 @@
-use common::config::AppConfig;
 use iced::Element;
 use iced::widget::{column, pick_list, row, text, toggler};
+
+use common::config::AppConfig;
 
 const LANGUAGES: &[&str] = &["en", "zh"];
 

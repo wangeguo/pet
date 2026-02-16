@@ -1,6 +1,7 @@
-use common::config::{AiProvider, AppConfig};
 use iced::Element;
 use iced::widget::{column, pick_list, row, slider, text, text_input, toggler};
+
+use common::config::{AiProvider, AppConfig};
 
 const PROVIDERS: &[&str] = &["OpenAI", "Anthropic", "Ollama", "Custom"];
 

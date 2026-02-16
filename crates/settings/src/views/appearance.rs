@@ -1,6 +1,7 @@
-use common::config::AppConfig;
 use iced::Element;
 use iced::widget::{column, row, slider, text, text_input, toggler};
+
+use common::config::AppConfig;
 
 #[derive(Debug, Clone)]
 pub struct State {
