@@ -180,10 +180,12 @@ checksum = "5f0e0fee31ef5ed1ba1316088939cea399010ed7731dba877ed44aeb407a75ea"
 
 [[package]]
 name = "app"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "common",
  "notify",
+ "serde_json",
+ "tempfile",
  "tokio",
  "tracing",
  "tracing-subscriber",
@@ -1847,7 +1849,7 @@ dependencies = [
 
 [[package]]
 name = "common"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "auto-launch",
  "config",
@@ -4273,7 +4275,7 @@ dependencies = [
 
 [[package]]
 name = "manager"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "common",
  "iced",
@@ -6283,6 +6285,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "settings"
+version = "0.3.0"
+dependencies = [
+ "common",
+ "iced",
+ "tracing",
+ "tracing-subscriber",
+]
+
+[[package]]
 name = "sha2"
 version = "0.10.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6671,11 +6683,13 @@ dependencies = [
 
 [[package]]
 name = "theater"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "bevy",
  "common",
  "rand 0.10.0",
+ "serde_json",
+ "tokio",
  "tracing",
  "tracing-subscriber",
 ]
@@ -7127,7 +7141,7 @@ dependencies = [
 
 [[package]]
 name = "tray"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "common",
  "tracing",

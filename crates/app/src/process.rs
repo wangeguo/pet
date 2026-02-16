@@ -1,3 +1,5 @@
+#[cfg(unix)]
+use app::ipc::{IpcServer, MessageRouter};
 use common::config::{AppConfig, AppState};
 use common::paths::AppPaths;
 use common::{Result, autostart};
@@ -13,6 +15,7 @@ pub struct ProcessManager {
     tray: Option<Child>,
     theater: Option<Child>,
     manager: Option<Child>,
+    settings: Option<Child>,
 }
 
 impl ProcessManager {
@@ -22,6 +25,7 @@ impl ProcessManager {
             tray: None,
             theater: None,
             manager: None,
+            settings: None,
         }
     }
 
@@ -122,6 +126,37 @@ impl ProcessManager {
         Ok(())
     }
 
+    pub fn start_settings(&mut self) -> Result<()> {
+        if self.settings.is_some() {
+            info!("Settings process already running");
+            return Ok(());
+        }
+
+        let exe_path = Self::get_exe_path("pet-settings");
+        info!("Starting settings process: {exe_path:?}");
+
+        let child = Command::new(&exe_path)
+            .stdout(Stdio::inherit())
+            .stderr(Stdio::inherit())
+            .spawn()?;
+
+        self.settings = Some(child);
+        self.update_state(|state| state.settings_open = true)?;
+        info!("Settings process started");
+        Ok(())
+    }
+
+    pub async fn stop_settings(&mut self) -> Result<()> {
+        if let Some(mut child) = self.settings.take() {
+            info!("Stopping settings process...");
+            child.kill().await?;
+            child.wait().await?;
+            self.update_state(|state| state.settings_open = false)?;
+            info!("Settings process stopped");
+        }
+        Ok(())
+    }
+
     fn update_state<F>(&self, f: F) -> Result<()>
     where
         F: FnOnce(&mut AppState),
@@ -165,6 +200,67 @@ impl ProcessManager {
 
         info!("Process manager running, waiting for events...");
 
+        #[cfg(unix)]
+        {
+            let mut ipc_server = IpcServer::new(self.paths.socket_path());
+            let mut ipc_incoming = ipc_server.take_incoming();
+            let listener = ipc_server.start()?;
+            let router = MessageRouter::new(ipc_server.clients());
+
+            loop {
+                tokio::select! {
+                    _ = signal::ctrl_c() => {
+                        info!("Received shutdown signal");
+                        break;
+                    }
+                    should_exit = self.check_processes() => {
+                        if should_exit {
+                            info!("Tray process exited, shutting down...");
+                            break;
+                        }
+                    }
+                    Some(_event) = rx.recv() => {
+                        info!("Config/state file changed, reloading...");
+                        if let Ok(config) = AppConfig::load(&self.paths)
+                            && let Err(e) = autostart::sync_autostart(config.general.auto_start)
+                        {
+                            error!("Failed to sync auto-start on config change: {e}");
+                        }
+
+                        if let Ok(state) = AppState::load(&self.paths) {
+                            if state.manager_open && self.manager.is_none()
+                                && let Err(e) = self.start_manager()
+                            {
+                                error!("Failed to start manager: {e}");
+                            }
+                            if state.settings_open && self.settings.is_none()
+                                && let Err(e) = self.start_settings()
+                            {
+                                error!("Failed to start settings: {e}");
+                            }
+                        }
+                    }
+                    result = listener.accept() => {
+                        match result {
+                            Ok((stream, _addr)) => {
+                                info!("New IPC connection accepted");
+                                ipc_server.handle_connection(stream);
+                            }
+                            Err(e) => {
+                                error!("Failed to accept IPC connection: {e}");
+                            }
+                        }
+                    }
+                    Some(msg) = ipc_incoming.recv() => {
+                        router.route(msg.envelope).await;
+                    }
+                }
+            }
+
+            ipc_server.cleanup();
+        }
+
+        #[cfg(not(unix))]
         loop {
             tokio::select! {
                 _ = signal::ctrl_c() => {
@@ -178,11 +274,24 @@ impl ProcessManager {
                     }
                 }
                 Some(_event) = rx.recv() => {
-                    info!("Config file changed, reloading...");
+                    info!("Config/state file changed, reloading...");
                     if let Ok(config) = AppConfig::load(&self.paths)
-                        && let Err(e) = autostart::sync_autostart(config.auto_start)
+                        && let Err(e) = autostart::sync_autostart(config.general.auto_start)
                     {
                         error!("Failed to sync auto-start on config change: {e}");
+                    }
+
+                    if let Ok(state) = AppState::load(&self.paths) {
+                        if state.manager_open && self.manager.is_none()
+                            && let Err(e) = self.start_manager()
+                        {
+                            error!("Failed to start manager: {e}");
+                        }
+                        if state.settings_open && self.settings.is_none()
+                            && let Err(e) = self.start_settings()
+                        {
+                            error!("Failed to start settings: {e}");
+                        }
                     }
                 }
             }
@@ -221,11 +330,23 @@ impl ProcessManager {
             let _ = self.update_state(|state| state.manager_open = false);
         }
 
+        if let Some(ref mut child) = self.settings
+            && let Ok(Some(status)) = child.try_wait()
+        {
+            info!("Settings process exited with status: {status:?}");
+            self.settings = None;
+            let _ = self.update_state(|state| state.settings_open = false);
+        }
+
         tray_exited
     }
 
     async fn shutdown(&mut self) -> Result<()> {
         info!("Shutting down all processes...");
+
+        if let Err(e) = self.stop_settings().await {
+            error!("Error stopping settings: {}", e);
+        }
 
         if let Err(e) = self.stop_manager().await {
             error!("Error stopping manager: {}", e);
@@ -252,6 +373,9 @@ impl Drop for ProcessManager {
             let _ = child.start_kill();
         }
         if let Some(ref mut child) = self.manager {
+            let _ = child.start_kill();
+        }
+        if let Some(ref mut child) = self.settings {
             let _ = child.start_kill();
         }
     }
