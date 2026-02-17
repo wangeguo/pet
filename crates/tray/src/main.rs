@@ -186,21 +186,11 @@ impl ApplicationHandler for TrayApp {
                     info!("Open settings requested");
                     #[cfg(unix)]
                     self.send_ipc(common::ipc::IpcMessage::OpenSettings);
-                    #[cfg(not(unix))]
-                    {
-                        self.state.settings_open = true;
-                        let _ = self.state.save(&self.paths);
-                    }
                 }
                 "open_manager" => {
                     info!("Open manager requested");
                     #[cfg(unix)]
                     self.send_ipc(common::ipc::IpcMessage::OpenManager);
-                    #[cfg(not(unix))]
-                    {
-                        self.state.manager_open = true;
-                        let _ = self.state.save(&self.paths);
-                    }
                 }
                 "quit" => {
                     info!("Quit requested");

@@ -148,6 +148,7 @@ impl ProcessManager {
         Ok(())
     }
 
+    #[allow(dead_code)]
     pub fn start_settings(&mut self) -> Result<()> {
         if self.settings.is_some() {
             info!("Settings process already running");
