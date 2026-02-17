@@ -89,24 +89,6 @@ just run-theater  # Bevy theater only
 just run-tray     # System tray only
 ```
 
-## Project Status
-
-The project is in active development. Current progress:
-
-- [x] **Phase 1** — Multi-process framework and IPC
-- [x] **Phase 2** — Bevy theater with 3D rendering and
-  interaction
-- [x] **Phase 3** — Replay behavior system with scripted
-  actions
-- [ ] **Phase 4** — UDS-based real-time IPC
-- [ ] **Phase 5** — Settings center (Iced)
-- [ ] **Phase 6** — Pet manager with Meshy AI integration
-- [ ] **Phase 7** — AI Brain with LLM-driven behaviors
-- [ ] **Phase 8** — Polish and cross-platform refinement
-- [ ] **Phase 9** — Voice interaction (future)
-
-See [docs/roadmap.md](docs/roadmap.md) for the full roadmap.
-
 ## Documentation
 
 - [Product Design](docs/product.md) — vision, features, and
