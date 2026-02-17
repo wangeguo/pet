@@ -31,15 +31,44 @@ pub struct IpcEnvelope {
 pub enum IpcMessage {
     // Theater -> Brain
     PetClicked,
-    PetDragCompleted { x: i32, y: i32 },
-    AnimationsAvailable { animations: Vec<String> },
+    PetDragCompleted {
+        x: i32,
+        y: i32,
+    },
+    AnimationsAvailable {
+        animations: Vec<String>,
+    },
 
     // Brain -> Theater
-    ExecuteScript { script: BehaviorScript },
-    AiThinking { is_thinking: bool },
+    ExecuteScript {
+        script: BehaviorScript,
+    },
+    AiThinking {
+        is_thinking: bool,
+    },
+
+    // Tray -> App (commands)
+    TogglePetVisibility,
+    OpenManager,
+    OpenSettings,
+    QuitApp,
+
+    // App -> Tray (state feedback)
+    PetVisibilityChanged {
+        visible: bool,
+    },
+
+    // App -> Theater (appearance updates)
+    UpdateAppearance {
+        pet_scale: f32,
+        opacity: f32,
+        always_on_top: bool,
+    },
 
     // Tray/Manager -> Brain
-    UserTextInput { text: String },
+    UserTextInput {
+        text: String,
+    },
 
     // General
     ProcessReady,
@@ -188,5 +217,65 @@ mod tests {
     fn process_id_display() {
         assert_eq!(ProcessId::Theater.to_string(), "Theater");
         assert_eq!(ProcessId::Brain.to_string(), "Brain");
+    }
+
+    #[test]
+    fn tray_command_messages_roundtrip() {
+        let messages = [
+            IpcMessage::TogglePetVisibility,
+            IpcMessage::OpenManager,
+            IpcMessage::OpenSettings,
+            IpcMessage::QuitApp,
+        ];
+        for msg in messages {
+            let envelope = IpcEnvelope::new(ProcessId::Tray, ProcessId::App, msg);
+            let encoded = envelope.encode().unwrap();
+            let decoded = IpcEnvelope::decode(&encoded[4..]).unwrap();
+            assert_eq!(decoded.source, ProcessId::Tray);
+            assert_eq!(decoded.target, ProcessId::App);
+        }
+    }
+
+    #[test]
+    fn pet_visibility_changed_roundtrip() {
+        let envelope = IpcEnvelope::new(
+            ProcessId::App,
+            ProcessId::Tray,
+            IpcMessage::PetVisibilityChanged { visible: false },
+        );
+        let encoded = envelope.encode().unwrap();
+        let decoded = IpcEnvelope::decode(&encoded[4..]).unwrap();
+        if let IpcMessage::PetVisibilityChanged { visible } = decoded.payload {
+            assert!(!visible);
+        } else {
+            panic!("Expected PetVisibilityChanged message");
+        }
+    }
+
+    #[test]
+    fn update_appearance_roundtrip() {
+        let envelope = IpcEnvelope::new(
+            ProcessId::App,
+            ProcessId::Theater,
+            IpcMessage::UpdateAppearance {
+                pet_scale: 1.5,
+                opacity: 0.8,
+                always_on_top: false,
+            },
+        );
+        let encoded = envelope.encode().unwrap();
+        let decoded = IpcEnvelope::decode(&encoded[4..]).unwrap();
+        if let IpcMessage::UpdateAppearance {
+            pet_scale,
+            opacity,
+            always_on_top,
+        } = decoded.payload
+        {
+            assert!((pet_scale - 1.5).abs() < f32::EPSILON);
+            assert!((opacity - 0.8).abs() < f32::EPSILON);
+            assert!(!always_on_top);
+        } else {
+            panic!("Expected UpdateAppearance message");
+        }
     }
 }

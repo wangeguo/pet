@@ -22,6 +22,8 @@ pub fn run_theater() -> common::Result<()> {
     let theater_config = TheaterConfig {
         model_path: config.get_active_pet().map(|pet| pet.model_path.clone()),
         pet_scale: config.appearance.pet_scale,
+        opacity: config.appearance.opacity,
+        always_on_top: config.appearance.always_on_top,
         window_position: (
             config.appearance.pet_position.x,
             config.appearance.pet_position.y,
@@ -44,7 +46,11 @@ pub fn run_theater() -> common::Result<()> {
                     resolution: WindowResolution::new(DEFAULT_WINDOW_SIZE, DEFAULT_WINDOW_SIZE),
                     transparent: true,
                     decorations: false,
-                    window_level: WindowLevel::AlwaysOnTop,
+                    window_level: if theater_config.always_on_top {
+                        WindowLevel::AlwaysOnTop
+                    } else {
+                        WindowLevel::Normal
+                    },
                     present_mode: PresentMode::AutoVsync,
                     resizable: false,
                     #[cfg(target_os = "macos")]

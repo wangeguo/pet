@@ -1,3 +1,5 @@
+#[cfg(unix)]
+mod ipc;
 mod menu;
 
 use common::Result;
@@ -23,11 +25,12 @@ fn main() -> Result<()> {
 
     let paths = AppPaths::new()?;
     let state = AppState::load(&paths).unwrap_or_default();
+    let pet_visible = state.pet_visible;
 
     let event_loop = EventLoop::new().expect("Failed to create event loop");
     event_loop.set_control_flow(ControlFlow::Wait);
 
-    let mut app = TrayApp::new(paths, state);
+    let mut app = TrayApp::new(paths, pet_visible);
 
     event_loop
         .run_app(&mut app)
@@ -37,23 +40,64 @@ fn main() -> Result<()> {
 }
 
 struct TrayApp {
-    paths: AppPaths,
-    state: AppState,
+    pet_visible: bool,
     tray_icon: Option<tray_icon::TrayIcon>,
+    #[cfg(unix)]
+    ipc_outgoing: std::sync::mpsc::Sender<common::ipc::IpcEnvelope>,
+    #[cfg(unix)]
+    ipc_incoming: std::sync::mpsc::Receiver<common::ipc::IpcEnvelope>,
+    #[cfg(unix)]
+    ipc_connected: bool,
+    // Non-unix fallback fields
+    #[cfg(not(unix))]
+    paths: AppPaths,
+    #[cfg(not(unix))]
+    state: AppState,
 }
 
 impl TrayApp {
-    fn new(paths: AppPaths, state: AppState) -> Self {
-        Self {
-            paths,
-            state,
-            tray_icon: None,
+    fn new(paths: AppPaths, pet_visible: bool) -> Self {
+        #[cfg(unix)]
+        {
+            let (incoming_tx, incoming_rx) = std::sync::mpsc::channel();
+            let (outgoing_tx, outgoing_rx) = std::sync::mpsc::channel();
+
+            let socket_path = paths.socket_path();
+            let connected = ipc::spawn_ipc_client(socket_path, incoming_tx, outgoing_rx);
+
+            if connected {
+                info!("Tray IPC connected");
+            } else {
+                info!("Tray IPC not connected, menu commands may not work");
+            }
+
+            Self {
+                pet_visible,
+                tray_icon: None,
+                ipc_outgoing: outgoing_tx,
+                ipc_incoming: incoming_rx,
+                ipc_connected: connected,
+            }
+        }
+
+        #[cfg(not(unix))]
+        {
+            let state = AppState {
+                pet_visible,
+                ..Default::default()
+            };
+            Self {
+                pet_visible,
+                tray_icon: None,
+                paths,
+                state,
+            }
         }
     }
 
     fn create_tray_icon(&mut self) {
         let icon = create_default_icon();
-        let menu = build_menu(self.state.pet_visible);
+        let menu = build_menu(self.pet_visible);
 
         let tray_icon = TrayIconBuilder::new()
             .with_menu(Box::new(menu))
@@ -68,8 +112,42 @@ impl TrayApp {
 
     fn rebuild_menu(&self) {
         if let Some(ref tray) = self.tray_icon {
-            let menu = build_menu(self.state.pet_visible);
+            let menu = build_menu(self.pet_visible);
             tray.set_menu(Some(Box::new(menu)));
+        }
+    }
+
+    #[cfg(unix)]
+    fn send_ipc(&self, payload: common::ipc::IpcMessage) {
+        if !self.ipc_connected {
+            return;
+        }
+        let envelope = common::ipc::IpcEnvelope::new(
+            common::ipc::ProcessId::Tray,
+            common::ipc::ProcessId::App,
+            payload,
+        );
+        let _ = self.ipc_outgoing.send(envelope);
+    }
+
+    #[cfg(unix)]
+    fn poll_ipc(&mut self) {
+        use common::ipc::IpcMessage;
+
+        while let Ok(envelope) = self.ipc_incoming.try_recv() {
+            match envelope.payload {
+                IpcMessage::PetVisibilityChanged { visible } => {
+                    self.pet_visible = visible;
+                    self.rebuild_menu();
+                }
+                IpcMessage::Shutdown => {
+                    info!("Received shutdown via IPC");
+                    std::process::exit(0);
+                }
+                _ => {
+                    info!("Tray: unhandled IPC message: {:?}", envelope.payload);
+                }
+            }
         }
     }
 }
@@ -94,27 +172,48 @@ impl ApplicationHandler for TrayApp {
             match event.id.0.as_str() {
                 "show_pet" => {
                     info!("Toggle pet visibility");
-                    self.state.pet_visible = !self.state.pet_visible;
-                    let _ = self.state.save(&self.paths);
-                    self.rebuild_menu();
+                    #[cfg(unix)]
+                    self.send_ipc(common::ipc::IpcMessage::TogglePetVisibility);
+                    #[cfg(not(unix))]
+                    {
+                        self.state.pet_visible = !self.state.pet_visible;
+                        self.pet_visible = self.state.pet_visible;
+                        let _ = self.state.save(&self.paths);
+                        self.rebuild_menu();
+                    }
                 }
                 "open_settings" => {
                     info!("Open settings requested");
-                    self.state.settings_open = true;
-                    let _ = self.state.save(&self.paths);
+                    #[cfg(unix)]
+                    self.send_ipc(common::ipc::IpcMessage::OpenSettings);
+                    #[cfg(not(unix))]
+                    {
+                        self.state.settings_open = true;
+                        let _ = self.state.save(&self.paths);
+                    }
                 }
                 "open_manager" => {
                     info!("Open manager requested");
-                    self.state.manager_open = true;
-                    let _ = self.state.save(&self.paths);
+                    #[cfg(unix)]
+                    self.send_ipc(common::ipc::IpcMessage::OpenManager);
+                    #[cfg(not(unix))]
+                    {
+                        self.state.manager_open = true;
+                        let _ = self.state.save(&self.paths);
+                    }
                 }
                 "quit" => {
                     info!("Quit requested");
+                    #[cfg(unix)]
+                    self.send_ipc(common::ipc::IpcMessage::QuitApp);
                     std::process::exit(0);
                 }
                 _ => {}
             }
         }
+
+        #[cfg(unix)]
+        self.poll_ipc();
     }
 }
 

@@ -103,6 +103,7 @@ fn setup_scene(
 fn spawn_gltf_scene(
     mut commands: Commands,
     mut pet_state: ResMut<PetModelState>,
+    config: Res<TheaterConfig>,
     gltf_assets: Res<Assets<Gltf>>,
     placeholder_query: Query<Entity, With<PlaceholderPet>>,
 ) {
@@ -133,7 +134,7 @@ fn spawn_gltf_scene(
         let pet_entity = commands
             .spawn((
                 SceneRoot(scene_handle),
-                Transform::from_scale(Vec3::splat(1.0)),
+                Transform::from_scale(Vec3::splat(config.pet_scale)),
                 PetMarker,
             ))
             .id();

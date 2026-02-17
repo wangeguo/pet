@@ -130,7 +130,8 @@ async fn server_client_ping_pong() {
     let mut server = app::ipc::IpcServer::new(socket_path.clone());
     let mut incoming = server.take_incoming();
     let listener = server.start().unwrap();
-    let router = app::ipc::MessageRouter::new(server.clients());
+    let (cmd_tx, _cmd_rx) = tokio::sync::mpsc::channel(16);
+    let router = app::ipc::MessageRouter::new(server.clients(), cmd_tx);
 
     // Accept connections in background
     let accept_handle = tokio::spawn({
@@ -185,7 +186,8 @@ async fn message_routing_between_clients() {
     let mut server = app::ipc::IpcServer::new(socket_path.clone());
     let mut incoming = server.take_incoming();
     let listener = server.start().unwrap();
-    let router = app::ipc::MessageRouter::new(server.clients());
+    let (cmd_tx, _cmd_rx) = tokio::sync::mpsc::channel(16);
+    let router = app::ipc::MessageRouter::new(server.clients(), cmd_tx);
 
     // Spawn accept loop
     let server_handle = tokio::spawn(async move {
