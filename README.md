@@ -84,9 +84,11 @@ just check-fmt    # Check formatting (nightly)
 Run individual processes:
 
 ```bash
-just run          # Main app (starts all processes)
-just run-theater  # Bevy theater only
-just run-tray     # System tray only
+just run           # Main app (starts all processes)
+just run-theater   # Bevy theater only
+just run-tray      # System tray only
+just run-manager   # Pet manager only
+just run-settings  # Settings only
 ```
 
 ## Documentation
