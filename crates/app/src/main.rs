@@ -31,27 +31,8 @@ async fn main() -> Result<()> {
         error!("Failed to sync auto-start setting: {e}");
     }
 
-    let mut manager = ProcessManager::new(paths.clone());
-
-    if let Err(e) = manager.start_tray() {
-        error!("Failed to start tray process: {e}");
-        return Err(e);
-    }
-
-    // Always start theater - it will show the test model if no pet is configured
-    if let Err(e) = manager.start_theater() {
-        error!("Failed to start theater process: {e}");
-    }
-
-    let is_first_run = config.pets.is_empty();
-    if is_first_run {
-        info!("First run detected, opening manager...");
-        if let Err(e) = manager.start_manager() {
-            error!("Failed to start manager process: {e}");
-        }
-    }
-
-    manager.run().await?;
+    let mut manager = ProcessManager::new(paths);
+    manager.run(&config).await?;
 
     info!("Pet desktop companion stopped.");
     Ok(())

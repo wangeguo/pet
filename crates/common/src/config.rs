@@ -31,7 +31,7 @@ impl Default for GeneralSettings {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct AppearanceSettings {
     #[serde(default = "default_scale")]
     pub pet_scale: f32,
@@ -270,9 +270,6 @@ impl AppConfig {
 pub struct AppState {
     pub pet_visible: bool,
     pub theater_running: bool,
-    pub manager_open: bool,
-    #[serde(default)]
-    pub settings_open: bool,
 }
 
 impl AppState {

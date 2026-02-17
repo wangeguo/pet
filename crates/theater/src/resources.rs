@@ -13,12 +13,16 @@ pub struct TheaterConfig {
     /// Path to the GLB model file
     pub model_path: Option<PathBuf>,
     /// Scale factor for the pet
-    #[allow(dead_code)]
     pub pet_scale: f32,
+    /// Window opacity (0.0 - 1.0)
+    /// TODO: implement opacity via material alpha
+    #[allow(dead_code)]
+    pub opacity: f32,
+    /// Whether the window stays on top
+    pub always_on_top: bool,
     /// Initial window position (x, y)
     pub window_position: (i32, i32),
-    /// Application paths (for config reload in Phase 3)
-    #[allow(dead_code)]
+    /// Application paths
     pub paths: AppPaths,
 }
 

@@ -6,6 +6,9 @@ use std::sync::Mutex;
 use std::sync::mpsc as std_mpsc;
 use tracing::{error, info, warn};
 
+use bevy::window::{PrimaryWindow, WindowLevel};
+
+use crate::components::PetMarker;
 use crate::events::{PetClickedEvent, SwitchScriptEvent};
 use crate::resources::{ScriptLibrary, TheaterConfig};
 
@@ -170,6 +173,8 @@ fn receive_ipc_messages(
     bridge: Res<IpcBridge>,
     mut switch_events: MessageWriter<SwitchScriptEvent>,
     mut script_library: ResMut<ScriptLibrary>,
+    mut pet_query: Query<&mut Transform, With<PetMarker>>,
+    mut window_query: Query<&mut Window, With<PrimaryWindow>>,
 ) {
     let rx = bridge.incoming_rx.lock().unwrap();
     while let Ok(envelope) = rx.try_recv() {
@@ -182,6 +187,24 @@ fn receive_ipc_messages(
                     script_id,
                     force: true,
                 });
+            }
+            IpcMessage::UpdateAppearance {
+                pet_scale,
+                always_on_top,
+                ..
+            } => {
+                info!("IPC: updating appearance (scale={pet_scale}, on_top={always_on_top})");
+                for mut transform in pet_query.iter_mut() {
+                    transform.scale = Vec3::splat(pet_scale);
+                }
+                for mut window in window_query.iter_mut() {
+                    window.window_level = if always_on_top {
+                        WindowLevel::AlwaysOnTop
+                    } else {
+                        WindowLevel::Normal
+                    };
+                }
+                // TODO: opacity requires modifying material alpha values
             }
             IpcMessage::Shutdown => {
                 info!("IPC: received shutdown");

@@ -15,8 +15,8 @@ communication mechanism
   read/write, storage
 - [x] 1.4 Config storage system - TOML config file read/write
 - [x] 1.5 Main process framework - Process manager
-- [x] 1.6 Inter-process communication - Config file-based
-  state sync
+- [x] 1.6 Inter-process communication - UDS IPC for commands,
+  config.toml + notify for persistent settings
 - [x] 1.7 System tray process - tray-icon tray and menu
 
 ## Phase 2: Theater Process (Bevy) ✅
@@ -70,6 +70,12 @@ layer as the foundation for Brain
   ECS events
 - [x] 4.6 Integration tests - theater <-> app message
   round-trip verification
+- [x] 4.7 Tray IPC client - Migrate tray commands from
+  state.toml to UDS IPC
+- [x] 4.8 Appearance push - App detects config changes and
+  pushes to Theater via IPC for live updates
+- [x] 4.9 Graceful shutdown - IPC Shutdown message with
+  timeout fallback
 
 ## Phase 5: Settings Center ✅
 
@@ -157,7 +163,8 @@ interface (Iced)
 - [ ] 8.7 Text bubbles - Display AI reply text in Theater
 - [ ] 8.8 Window position memory - Save and restore pet window
   position
-- [ ] 8.9 Graceful shutdown - Cleanup on exit
+- [x] 8.9 Graceful shutdown - Cleanup on exit (via IPC
+  Shutdown in Phase 4.9)
 - [ ] 8.10 Cross-platform support - macOS / Windows / Linux
   (X11/Wayland)
 - [ ] 8.11 Performance optimization - Rendering performance,

@@ -189,6 +189,7 @@ dependencies = [
  "tokio",
  "tracing",
  "tracing-subscriber",
+ "uuid",
 ]
 
 [[package]]
@@ -7144,6 +7145,7 @@ name = "tray"
 version = "0.3.0"
 dependencies = [
  "common",
+ "tokio",
  "tracing",
  "tracing-subscriber",
  "tray-icon",
