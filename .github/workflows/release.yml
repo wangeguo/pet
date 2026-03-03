@@ -57,7 +57,7 @@ jobs:
         run: just package-zip ${{ matrix.target }} ${{ matrix.platform }}
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: pet-${{ matrix.platform }}
           path: pet-*.*
