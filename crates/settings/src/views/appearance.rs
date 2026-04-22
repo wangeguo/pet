@@ -47,7 +47,7 @@ impl State {
             text("Appearance Settings").size(24),
             row![
                 text("Pet Scale"),
-                slider(0.5..=3.0, self.pet_scale, Message::ScaleChanged).step(0.1),
+                slider(0.5..=3.0, self.pet_scale, Message::ScaleChanged).step(0.1_f32),
                 text(format!("{:.1}", self.pet_scale)),
             ]
             .spacing(10),
@@ -66,7 +66,7 @@ impl State {
                 .on_toggle(Message::ToggleAlwaysOnTop),
             row![
                 text("Opacity"),
-                slider(0.1..=1.0, self.opacity, Message::OpacityChanged).step(0.05),
+                slider(0.1..=1.0, self.opacity, Message::OpacityChanged).step(0.05_f32),
                 text(format!("{:.0}%", self.opacity * 100.0)),
             ]
             .spacing(10),

@@ -130,7 +130,7 @@ impl State {
             .spacing(10),
             row![
                 text("Temperature"),
-                slider(0.0..=2.0, self.temperature, Message::TemperatureChanged).step(0.1),
+                slider(0.0..=2.0, self.temperature, Message::TemperatureChanged).step(0.1_f32),
                 text(format!("{:.1}", self.temperature)),
             ]
             .spacing(10),
