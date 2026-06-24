@@ -24,7 +24,7 @@ jobs:
           - platform: darwin-amd64
           - platform: darwin-arm64
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@nightly
       - uses: taiki-e/install-action@just
 
