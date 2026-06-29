@@ -3,6 +3,7 @@
 use crate::components::PetMarker;
 use crate::resources::{PetModelState, TheaterConfig};
 use bevy::prelude::*;
+use bevy::world_serialization::WorldAssetRoot;
 use std::path::PathBuf;
 
 /// Default model filename in assets/pets directory
@@ -56,7 +57,7 @@ fn setup_scene(
     commands.spawn((
         DirectionalLight {
             illuminance: 10_000.0,
-            shadows_enabled: false,
+            shadow_maps_enabled: false,
             ..default()
         },
         Transform::from_xyz(0.0, 5.0, -5.0).looking_at(Vec3::ZERO, Vec3::Y),
@@ -66,7 +67,7 @@ fn setup_scene(
     commands.spawn((
         DirectionalLight {
             illuminance: 5_000.0,
-            shadows_enabled: false,
+            shadow_maps_enabled: false,
             ..default()
         },
         Transform::from_xyz(0.0, -3.0, -3.0).looking_at(Vec3::ZERO, Vec3::Y),
@@ -133,7 +134,7 @@ fn spawn_gltf_scene(
     {
         let pet_entity = commands
             .spawn((
-                SceneRoot(scene_handle),
+                WorldAssetRoot(scene_handle),
                 Transform::from_scale(Vec3::splat(config.pet_scale)),
                 PetMarker,
             ))

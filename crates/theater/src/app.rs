@@ -64,10 +64,12 @@ pub fn run_theater() -> common::Result<()> {
                 ..default()
             })
             .set(bevy::render::RenderPlugin {
-                render_creation: bevy::render::settings::RenderCreation::Automatic(WgpuSettings {
-                    backends: Some(bevy::render::settings::Backends::all()),
-                    ..default()
-                }),
+                render_creation: bevy::render::settings::RenderCreation::Automatic(Box::new(
+                    WgpuSettings {
+                        backends: Some(bevy::render::settings::Backends::all()),
+                        ..default()
+                    },
+                )),
                 ..default()
             }),
     )
