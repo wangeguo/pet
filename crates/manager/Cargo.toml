@@ -11,6 +11,10 @@ path = "src/main.rs"
 [dependencies]
 common.workspace = true
 iced.workspace = true
+# Workaround for naga 27.0.3 failing to compile without `termcolor`:
+# `iced_wgpu` -> `cryoglyph` -> `wgpu` 27 -> `naga` 27 is built without
+# the feature, but `naga`'s diagnostic formatting requires it.
+naga.workspace = true
 reqwest.workspace = true
 serde.workspace = true
 serde_json.workspace = true
