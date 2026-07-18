@@ -199,7 +199,7 @@ checksum = "7f202df86484c868dbad7eaa557ef785d5c66295e41b460ef922eca0723b842c"
 
 [[package]]
 name = "app"
-version = "0.4.12"
+version = "0.4.13"
 dependencies = [
  "common",
  "notify",
@@ -1969,7 +1969,7 @@ dependencies = [
 
 [[package]]
 name = "common"
-version = "0.4.12"
+version = "0.4.13"
 dependencies = [
  "auto-launch",
  "config",
@@ -4442,7 +4442,7 @@ dependencies = [
 
 [[package]]
 name = "manager"
-version = "0.4.12"
+version = "0.4.13"
 dependencies = [
  "common",
  "iced",
@@ -6520,7 +6520,7 @@ dependencies = [
 
 [[package]]
 name = "settings"
-version = "0.4.12"
+version = "0.4.13"
 dependencies = [
  "common",
  "iced",
@@ -6927,7 +6927,7 @@ dependencies = [
 
 [[package]]
 name = "theater"
-version = "0.4.12"
+version = "0.4.13"
 dependencies = [
  "bevy",
  "common",
@@ -7352,7 +7352,7 @@ dependencies = [
 
 [[package]]
 name = "tray"
-version = "0.4.12"
+version = "0.4.13"
 dependencies = [
  "common",
  "tokio",
