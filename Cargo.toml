@@ -15,7 +15,7 @@ config = { version = "0.15", features = ["toml"] }
 directories = "6"
 iced = { version = "0.14", features = ["tokio", "image"] }
 jiff = { version = "0.2", features = ["serde"] }
-naga = { version = "27.0.3", features = ["termcolor"] }
+naga = { version = "29.0.3", features = ["termcolor"] }
 notify = "8"
 rand = "0.10"
 reqwest = { version = "0.13", features = ["json"] }
