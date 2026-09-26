@@ -148,7 +148,6 @@ install-packaging-tools *tools:
                 cargo install cargo-generate-rpm
                 ;;
             dmg)
-                cargo install toml-cli
                 brew install create-dmg
                 ;;
             msi)
@@ -224,7 +223,7 @@ package-rpm target:
 package-dmg platform:
     #!/usr/bin/env bash
     set -euo pipefail
-    version=$(toml get Cargo.toml workspace.package.version --raw)
+    version=$(grep -m1 '^version = ' Cargo.toml | sed 's/version = "\(.*\)"/\1/')
     app_name="Pet.app"
     vol_name="Pet Installer"
     resource_dir="assets/packaging/macos"
